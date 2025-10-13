@@ -1,8 +1,13 @@
 # Multi stage docker file for the Attendize application layer images
 
-# Base image with nginx, php-fpm and composer built on debian
-FROM wyveo/nginx-php-fpm:php74 as base
-RUN apt-get update && apt-get install -y wait-for-it libxrender1
+# Base image with nginx, php-fpm and composer - using updated version
+FROM wyveo/nginx-php-fpm:php81 as base
+
+# Update repositories to use archive for old Debian versions and install dependencies
+RUN apt-get update && apt-get install -y \
+    wait-for-it \
+    libxrender1 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set up code
 WORKDIR /usr/share/nginx/html
@@ -23,9 +28,13 @@ FROM base as web
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # self-signed ssl certificate for https support
-RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj "/C=GB/ST=London/L=London/O=NA/CN=localhost" \
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/ssl/private/nginx-selfsigned.key \
+    -out /etc/ssl/certs/nginx-selfsigned.crt \
+    -subj "/C=GB/ST=London/L=London/O=NA/CN=localhost" \
     && openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048 \
-    && mkdir /etc/nginx/snippets
+    && mkdir -p /etc/nginx/snippets
+
 COPY self-signed.conf /etc/nginx/snippets/self-signed.conf
 COPY ssl-params.conf /etc/nginx/snippets/ssl-params.conf
 
