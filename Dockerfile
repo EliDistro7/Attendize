@@ -1,6 +1,6 @@
 # Multi stage docker file for the Attendize application layer images
 
-# Use official PHP-FPM image with Debian Bullseye - UPGRADED TO 8.2
+# Use official PHP-FPM image with Debian Bullseye - UPGRADED TO 8.3
 FROM php:8.3-fpm-bullseye as base
 
 # Install system dependencies and PHP extensions
@@ -33,6 +33,9 @@ COPY . .
 
 # Install composer dependencies first
 RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=php --no-scripts
+
+# Create .env file from example before running artisan commands
+RUN cp .env.example .env
 
 # run chmod files, setup laravel key
 RUN chmod -R 755 storage bootstrap/cache \
