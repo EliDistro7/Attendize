@@ -65,6 +65,8 @@ RUN echo '#!/bin/bash\n\
 set -e\n\
 # Ensure app is not in maintenance mode\n\
 php artisan up || true\n\
+# Run database migrations\n\
+php artisan migrate --force\n\
 # Run Laravel optimization with runtime environment\n\
 php artisan config:cache\n\
 php artisan route:cache\n\
