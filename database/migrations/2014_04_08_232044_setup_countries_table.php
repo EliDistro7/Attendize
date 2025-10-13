@@ -11,9 +11,9 @@ class SetupCountriesTable extends Migration
      */
     public function up()
     {
-        // Creates the users table
+        // Creates the countries table
         Schema::create('countries', function ($table) {
-            $table->integer('id')->index();
+            $table->integer('id')->primary();  // Changed: combined primary key definition
             $table->string('capital', 255)->nullable();
             $table->string('citizenship', 255)->nullable();
             $table->string('country_code', 3)->default('');
@@ -27,8 +27,8 @@ class SetupCountriesTable extends Migration
             $table->string('region_code', 3)->default('');
             $table->string('sub_region_code', 3)->default('');
             $table->boolean('eea')->default(0);
-
-            $table->primary('id');
+            
+            // Removed: $table->primary('id');
         });
     }
 
