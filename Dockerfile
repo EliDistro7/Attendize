@@ -31,8 +31,9 @@ COPY . .
 # Install composer dependencies first
 RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=php --no-scripts
 
-# Set permissions (cache commands will run at startup with real .env)
-RUN chmod -R 755 storage bootstrap/cache
+# Set permissions and ownership for storage directories
+RUN chmod -R 775 storage bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache
 
 # The worker container runs the laravel queue in the background
 FROM base as worker
