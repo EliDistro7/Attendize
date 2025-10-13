@@ -15,8 +15,9 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libzip-dev \
     libxrender1 \
+    libgmp-dev \
     supervisor \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip gmp \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -76,6 +77,3 @@ EXPOSE 443
 
 # Starting nginx and php-fpm
 CMD ["/start.sh"]
-
-# NOTE: if you are deploying to production with this image, you should extend this Dockerfile with another stage that
-# performs clean up (i.e. removing composer) and installs your own dependencies (i.e. your own ssl certificate).
