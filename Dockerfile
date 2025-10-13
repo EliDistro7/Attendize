@@ -34,15 +34,8 @@ COPY . .
 # Install composer dependencies first
 RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=php --no-scripts
 
-# Create .env file from example before running artisan commands
-RUN cp .env.example .env
-
-# run chmod files, setup laravel key
-RUN chmod -R 755 storage bootstrap/cache \
-    && php artisan key:generate --force \
-    && php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
+# Set permissions (cache commands will run at startup with real .env)
+RUN chmod -R 755 storage bootstrap/cache
 
 # The worker container runs the laravel queue in the background
 FROM base as worker
@@ -69,8 +62,14 @@ RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 COPY self-signed.conf /etc/nginx/snippets/self-signed.conf
 COPY ssl-params.conf /etc/nginx/snippets/ssl-params.conf
 
-# Create startup script
+# Create startup script that runs cache commands with runtime .env
 RUN echo '#!/bin/bash\n\
+set -e\n\
+# Run Laravel optimization with runtime environment\n\
+php artisan config:cache\n\
+php artisan route:cache\n\
+php artisan view:cache\n\
+# Start services\n\
 php-fpm -D\n\
 nginx -g "daemon off;"' > /start.sh && chmod +x /start.sh
 
