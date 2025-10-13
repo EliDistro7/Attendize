@@ -1,7 +1,7 @@
 # Multi stage docker file for the Attendize application layer images
 
-# Use official PHP-FPM image with Debian Bullseye
-FROM php:8.1-fpm-bullseye as base
+# Use official PHP-FPM image with Debian Bullseye - UPGRADED TO 8.2
+FROM php:8.2-fpm-bullseye as base
 
 # Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
