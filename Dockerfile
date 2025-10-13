@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     libxrender1 \
     libgmp-dev \
     supervisor \
+    default-mysql-client \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip gmp \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -65,8 +66,8 @@ RUN echo '#!/bin/bash\n\
 set -e\n\
 # Ensure app is not in maintenance mode\n\
 php artisan up || true\n\
-# Run database migrations\n\
-php artisan migrate --force\n\
+# Run database migrations with custom command\n\
+php artisan migrate:no-pk-check --force\n\
 # Run Laravel optimization with runtime environment\n\
 php artisan config:cache\n\
 php artisan route:cache\n\
