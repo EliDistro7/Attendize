@@ -24,9 +24,6 @@ RUN apt-get update && apt-get install -y \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Configure nginx
-RUN echo "daemon off;" >> /etc/nginx/nginx.conf
-
 # Set up code
 WORKDIR /usr/share/nginx/html
 COPY . .
