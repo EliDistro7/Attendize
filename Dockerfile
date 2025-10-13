@@ -32,7 +32,7 @@ WORKDIR /usr/share/nginx/html
 COPY . .
 
 # Install composer dependencies first
-RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=php
+RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=php --no-scripts
 
 # run chmod files, setup laravel key
 RUN chmod -R 755 storage bootstrap/cache \
