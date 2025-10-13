@@ -1,13 +1,30 @@
 # Multi stage docker file for the Attendize application layer images
 
-# Base image with nginx, php-fpm and composer - using updated version
-FROM wyveo/nginx-php-fpm:php81 as base
+# Use official PHP-FPM image with Debian Bullseye
+FROM php:8.1-fpm-bullseye as base
 
-# Update repositories to use archive for old Debian versions and install dependencies
+# Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
-    wait-for-it \
+    nginx \
+    git \
+    curl \
+    zip \
+    unzip \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
     libxrender1 \
+    supervisor \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Configure nginx
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 
 # Set up code
 WORKDIR /usr/share/nginx/html
@@ -27,6 +44,9 @@ FROM base as web
 # nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Remove default nginx config
+RUN rm -f /etc/nginx/sites-enabled/default
+
 # self-signed ssl certificate for https support
 RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout /etc/ssl/private/nginx-selfsigned.key \
@@ -38,11 +58,16 @@ RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 COPY self-signed.conf /etc/nginx/snippets/self-signed.conf
 COPY ssl-params.conf /etc/nginx/snippets/ssl-params.conf
 
+# Create startup script
+RUN echo '#!/bin/bash\n\
+php-fpm -D\n\
+nginx -g "daemon off;"' > /start.sh && chmod +x /start.sh
+
 # Ports to expose
 EXPOSE 80
 EXPOSE 443
 
-# Starting nginx server
+# Starting nginx and php-fpm
 CMD ["/start.sh"]
 
 # NOTE: if you are deploying to production with this image, you should extend this Dockerfile with another stage that

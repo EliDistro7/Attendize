@@ -1,4 +1,4 @@
-<form class="online_payment ajax" action="<?php echo route('postCreateOrder', ['event_id' => $event->id]); ?>"
+<form class="online_payment ajax" action="<?php echo route('postCreateOrderMobile', ['event_id' => $event->id]); ?>"
       method="POST" id="free-payment-form">
 
     <p>

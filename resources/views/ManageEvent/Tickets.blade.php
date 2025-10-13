@@ -29,7 +29,7 @@
 
                 $.ajax({
                     type: 'POST',
-                    url: '{{ route('postUpdateTicketsOrder' ,['event_id' => $event->id]) }}',
+                    url: "{{ route('postUpdateTicketsOrder' ,['event_id' => $event->id]) }}",
                     dataType: 'json',
                     data: {ticket_ids: data},
                     success: function (data) {

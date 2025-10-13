@@ -1,6 +1,7 @@
-<div role="dialog"  class="modal fade" style="display: none;">
+<div role="dialog" class="modal fade" style="display: none;" id="createEventModal">
 
-    @include('ManageOrganiser.Partials.EventCreateAndEditJS');
+    {{-- Remove the problematic include temporarily --}}
+    {{-- @include('ManageOrganiser.Partials.EventCreateAndEditJS'); --}}
 
     {!! Form::open(array('url' => route('postCreateEvent'), 'class' => 'ajax gf')) !!}
     <div class="modal-dialog">
@@ -9,73 +10,70 @@
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h3 class="modal-title">
                     <i class="ico-calendar"></i>
-                    @lang("Event.create_event")</h3>
+                    @lang("Event.create_event")
+                </h3>
             </div>
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
                             {!! Form::label('title', trans("Event.event_title"), array('class'=>'control-label required')) !!}
-                            {!!  Form::text('title', old('title'),array('class'=>'form-control','placeholder'=>trans("Event.event_title_placeholder", ["name"=>Auth::user()->first_name]) ))  !!}
+                            {!! Form::text('title', old('title'),array('class'=>'form-control','placeholder'=>trans("Event.event_title_placeholder", ["name"=>Auth::user()->first_name]) )) !!}
                         </div>
 
                         <div class="form-group custom-theme">
                             {!! Form::label('description', trans("Event.event_description"), array('class'=>'control-label required')) !!}
-                            {!!  Form::textarea('description', old('description'),
+                            {!! Form::textarea('description', old('description'),
                                         array(
-                                        'class'=>'form-control  editable',
+                                        'class'=>'form-control editable',
                                         'rows' => 5
-                                        ))  !!}
+                                        )) !!}
                         </div>
+                        
+                        {{-- Updated Date Input Section --}}
                         <div class="row">
                             <div class="col-sm-6">
                                 <div class="form-group">
                                     {!! Form::label('start_date', trans("Event.event_start_date"), array('class'=>'required control-label')) !!}
-                                    {!!  Form::text('start_date', old('start_date'),
-                                                        [
-                                                    'class'=>'form-control start hasDatepicker ',
-                                                    'data-field'=>'datetime',
-                                                    'data-startend'=>'start',
-                                                    'data-startendelem'=>'.end',
-                                                    'readonly'=>''
-
-                                                ])  !!}
+                                    {!! Form::text('start_date', old('start_date'), [
+                                        'class'=>'form-control event-datepicker',
+                                        'id' => 'start_date',
+                                        'placeholder' => 'Select start date and time',
+                                        'autocomplete' => 'off'
+                                    ]) !!}
                                 </div>
                             </div>
 
                             <div class="col-sm-6">
                                 <div class="form-group">
-                                    {!!  Form::label('end_date', trans("Event.event_end_date"),
-                                                [
-                                            'class'=>'required control-label '
-                                        ])  !!}
-
-                                    {!!  Form::text('end_date', old('end_date'),
-                                                [
-                                            'class'=>'form-control end hasDatepicker ',
-                                            'data-field'=>'datetime',
-                                            'data-startend'=>'end',
-                                            'data-startendelem'=>'.start',
-                                            'readonly'=> ''
-                                        ])  !!}
+                                    {!! Form::label('end_date', trans("Event.event_end_date"), [
+                                        'class'=>'required control-label'
+                                    ]) !!}
+                                    {!! Form::text('end_date', old('end_date'), [
+                                        'class'=>'form-control event-datepicker',
+                                        'id' => 'end_date',
+                                        'placeholder' => 'Select end date and time',
+                                        'autocomplete' => 'off'
+                                    ]) !!}
                                 </div>
                             </div>
                         </div>
+
                         <div class="form-group">
                             {!! Form::label('event_image', trans("Event.event_image"), array('class'=>'control-label ')) !!}
                             {!! Form::styledFile('event_image') !!}
-
                         </div>
+
                         @if(!empty(config("attendize.google_maps_geocoding_key")))
                         <div class="form-group address-automatic">
                             {!! Form::label('name', trans("Event.venue_name"), array('class'=>'control-label required ')) !!}
-                            {!!  Form::text('venue_name_full', old('venue_name_full'),
+                            {!! Form::text('venue_name_full', old('venue_name_full'),
                                         array(
                                         'class'=>'form-control geocomplete location_field',
                                         'placeholder'=>trans("Event.venue_name_placeholder")
-                                        ))  !!}
+                                        )) !!}
 
-                                    <!--These are populated with the Google places info-->
+                            <!--These are populated with the Google places info-->
                             <div>
                                 {!! Form::hidden('formatted_address', '', ['class' => 'location_field']) !!}
                                 {!! Form::hidden('street_number', '', ['class' => 'location_field']) !!}
@@ -101,43 +99,43 @@
 
                             <div class="form-group">
                                 {!! Form::label('location_venue_name', trans("Event.venue_name"), array('class'=>'control-label required ')) !!}
-                                {!!  Form::text('location_venue_name', old('location_venue_name'), [
+                                {!! Form::text('location_venue_name', old('location_venue_name'), [
                                         'class'=>'form-control location_field',
                                         'placeholder'=>trans("Event.venue_name_placeholder")
-                                        ])  !!}
+                                        ]) !!}
                             </div>
                             <div class="form-group">
                                 {!! Form::label('location_address_line_1', trans("Event.address_line_1"), array('class'=>'control-label')) !!}
-                                {!!  Form::text('location_address_line_1', old('location_address_line_1'), [
+                                {!! Form::text('location_address_line_1', old('location_address_line_1'), [
                                         'class'=>'form-control location_field',
                                         'placeholder'=>trans("Event.address_line_1_placeholder")
-                                        ])  !!}
+                                        ]) !!}
                             </div>
                             <div class="form-group">
                                 {!! Form::label('location_address_line_2', trans("Event.address_line_2"), array('class'=>'control-label')) !!}
-                                {!!  Form::text('location_address_line_2', old('location_address_line_2'), [
+                                {!! Form::text('location_address_line_2', old('location_address_line_2'), [
                                         'class'=>'form-control location_field',
                                         'placeholder'=>trans("Event.address_line_2_placeholder")
-                                        ])  !!}
+                                        ]) !!}
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         {!! Form::label('location_state', trans("Event.city"), array('class'=>'control-label')) !!}
-                                        {!!  Form::text('location_state', old('location_state'), [
+                                        {!! Form::text('location_state', old('location_state'), [
                                                 'class'=>'form-control location_field',
                                                 'placeholder'=>trans("Event.city_placeholder")
-                                                ])  !!}
+                                                ]) !!}
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         {!! Form::label('location_post_code', trans("Event.post_code"), array('class'=>'control-label')) !!}
-                                        {!!  Form::text('location_post_code', old('location_post_code'), [
+                                        {!! Form::text('location_post_code', old('location_post_code'), [
                                                 'class'=>'form-control location_field',
                                                 'placeholder'=>trans("Event.post_code_placeholder")
-                                                ])  !!}
+                                                ]) !!}
                                     </div>
                                 </div>
                             </div>
@@ -158,43 +156,43 @@
 
                             <div class="form-group">
                                 {!! Form::label('location_venue_name', trans("Event.venue_name"), array('class'=>'control-label required ')) !!}
-                                {!!  Form::text('location_venue_name', old('location_venue_name'), [
+                                {!! Form::text('location_venue_name', old('location_venue_name'), [
                                         'class'=>'form-control location_field',
                                         'placeholder'=>trans("Event.venue_name_placeholder")
-                                        ])  !!}
+                                        ]) !!}
                             </div>
                             <div class="form-group">
                                 {!! Form::label('location_address_line_1', trans("Event.address_line_1"), array('class'=>'control-label')) !!}
-                                {!!  Form::text('location_address_line_1', old('location_address_line_1'), [
+                                {!! Form::text('location_address_line_1', old('location_address_line_1'), [
                                         'class'=>'form-control location_field',
                                         'placeholder'=>trans("Event.address_line_1_placeholder")
-                                        ])  !!}
+                                        ]) !!}
                             </div>
                             <div class="form-group">
                                 {!! Form::label('location_address_line_2', trans("Event.address_line_2"), array('class'=>'control-label')) !!}
-                                {!!  Form::text('location_address_line_2', old('location_address_line_2'), [
+                                {!! Form::text('location_address_line_2', old('location_address_line_2'), [
                                         'class'=>'form-control location_field',
                                         'placeholder'=>trans("Event.address_line_2_placeholder")
-                                        ])  !!}
+                                        ]) !!}
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         {!! Form::label('location_state', trans("Event.city"), array('class'=>'control-label')) !!}
-                                        {!!  Form::text('location_state', old('location_state'), [
+                                        {!! Form::text('location_state', old('location_state'), [
                                                 'class'=>'form-control location_field',
                                                 'placeholder'=>trans("Event.city_placeholder")
-                                                ])  !!}
+                                                ]) !!}
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         {!! Form::label('location_post_code', trans("Event.post_code"), array('class'=>'control-label')) !!}
-                                        {!!  Form::text('location_post_code', old('location_post_code'), [
+                                        {!! Form::text('location_post_code', old('location_post_code'), [
                                                 'class'=>'form-control location_field',
                                                 'placeholder'=>trans("Event.post_code_placeholder")
-                                                ])  !!}
+                                                ]) !!}
                                     </div>
                                 </div>
                             </div>
@@ -211,28 +209,28 @@
 
                                 <div class="form-group">
                                     {!! Form::label('organiser_name', trans("Organiser.organiser_name"), array('class'=>'required control-label ')) !!}
-                                    {!!  Form::text('organiser_name', old('organiser_name'),
+                                    {!! Form::text('organiser_name', old('organiser_name'),
                                                 array(
                                                 'class'=>'form-control',
                                                 'placeholder'=>trans("Organiser.organiser_name_placeholder")
-                                                ))  !!}
+                                                )) !!}
                                 </div>
                                 <div class="form-group">
                                     {!! Form::label('organiser_email', trans("Organiser.organiser_email"), array('class'=>'control-label required')) !!}
-                                    {!!  Form::text('organiser_email', old('organiser_email'),
+                                    {!! Form::text('organiser_email', old('organiser_email'),
                                                 array(
                                                 'class'=>'form-control ',
                                                 'placeholder'=>trans("Organiser.organiser_email_placeholder")
-                                                ))  !!}
+                                                )) !!}
                                 </div>
                                 <div class="form-group">
                                     {!! Form::label('organiser_about', trans("Organiser.organiser_description"), array('class'=>'control-label ')) !!}
-                                    {!!  Form::textarea('organiser_about', old('organiser_about'),
+                                    {!! Form::textarea('organiser_about', old('organiser_about'),
                                                 array(
                                                 'class'=>'form-control editable2',
                                                 'placeholder'=>trans("Organiser.organiser_description_placeholder"),
                                                 'rows' => 4
-                                                ))  !!}
+                                                )) !!}
                                 </div>
                                 <div class="form-group more-options">
                                     {!! Form::label('organiser_logo', trans("Organiser.organiser_logo"), array('class'=>'control-label ')) !!}
@@ -242,23 +240,21 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             {!! Form::label('organiser_facebook', trans("Organiser.organiser_facebook"), array('class'=>'control-label ')) !!}
-                                            {!!  Form::text('organiser_facebook', old('organiser_facebook'),
+                                            {!! Form::text('organiser_facebook', old('organiser_facebook'),
                                                 array(
                                                 'class'=>'form-control ',
                                                 'placeholder'=>trans("Organiser.organiser_facebook_placeholder")
-                                                ))  !!}
-
+                                                )) !!}
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             {!! Form::label('organiser_twitter', trans("Organiser.organiser_twitter"), array('class'=>'control-label ')) !!}
-                                            {!!  Form::text('organiser_twitter', old('organiser_twitter'),
+                                            {!! Form::text('organiser_twitter', old('organiser_twitter'),
                                                 array(
                                                 'class'=>'form-control ',
                                                 'placeholder'=>trans("Organiser.organiser_twitter_placeholder")
-                                                ))  !!}
-
+                                                )) !!}
                                         </div>
                                     </div>
                                 </div>
@@ -271,10 +267,8 @@
 
                             @if(!$organisers->isEmpty())
                                 <div class="form-group select_organiser" style="{{$organisers ? '' : 'display:none;'}}">
-
                                     {!! Form::label('organiser_id', trans("Organiser.select_organiser"), array('class'=>'control-label ')) !!}
                                     {!! Form::select('organiser_id', $organisers, $organiser_id, ['class' => 'form-control']) !!}
-
                                 </div>
                                 <span class="">
                                     @lang("Organiser.or") <a data-toggle-class=".select_organiser, .create_organiser"
@@ -294,6 +288,261 @@
                 {!! Form::submit(trans("Event.create_event"), ['class'=>"btn btn-success"]) !!}
             </div>
         </div>
-        {!! Form::close() !!}
     </div>
+    {!! Form::close() !!}
 </div>
+
+{{-- New JavaScript for Date Pickers --}}
+<script>
+$(document).ready(function() {
+    // Debug what's available
+    console.log('jQuery version:', $.fn.jquery);
+    console.log('Intl available:', typeof Intl !== 'undefined');
+    console.log('DateTimeFormat available:', typeof Intl !== 'undefined' ? typeof Intl.DateTimeFormat !== 'undefined' : false);
+    console.log('Flatpickr available:', typeof flatpickr !== 'undefined');
+
+    // Initialize date pickers when modal is shown
+    $('#createEventModal').on('shown.bs.modal', function() {
+        initializeDatePickers();
+    });
+
+    // Also initialize if modal is already visible
+    if ($('#createEventModal').is(':visible')) {
+        setTimeout(initializeDatePickers, 100);
+    }
+
+    function initializeDatePickers() {
+        console.log('Initializing date pickers...');
+        
+        // Clear any existing date pickers
+        $('.event-datepicker').each(function() {
+            if (this._flatpickr) {
+                this._flatpickr.destroy();
+            }
+            if ($(this).hasClass('hasDatepicker')) {
+                $(this).datepicker('destroy').removeClass('hasDatepicker');
+            }
+        });
+
+        // Try different date picker libraries in order of preference
+        try {
+            if (typeof flatpickr !== 'undefined' && typeof Intl !== 'undefined') {
+                // Use Flatpickr - FIXED FORMAT TO MATCH LARAVEL VALIDATION
+                console.log('Using Flatpickr');
+                $('.event-datepicker').flatpickr({
+                    enableTime: true,
+                    dateFormat: "Y-m-d H:i", // REMOVED SECONDS - this matches Laravel validation
+                    time_24hr: true,
+                    minDate: "today",
+                    defaultHour: 12,
+                    defaultMinute: 0,
+                    minuteIncrement: 15, // Optional: increment by 15 minutes
+                    onChange: function(selectedDates, dateStr, instance) {
+                        console.log('Date selected:', dateStr);
+                        
+                        // Update end date minimum if start date is selected
+                        if (instance.element.id === 'start_date' && selectedDates[0]) {
+                            var endDatePicker = document.getElementById('end_date')._flatpickr;
+                            if (endDatePicker) {
+                                endDatePicker.set('minDate', selectedDates[0]);
+                            }
+                        }
+                    }
+                });
+                
+            } else if (typeof $.fn.datetimepicker !== 'undefined') {
+                // Use jQuery Datetimepicker - FIXED FORMAT
+                console.log('Using jQuery Datetimepicker');
+                $('.event-datepicker').datetimepicker({
+                    format: 'Y-m-d H:i', // REMOVED SECONDS
+                    minDate: new Date(),
+                    step: 15,
+                    validateOnBlur: false
+                });
+                
+            } else if (typeof $.fn.datepicker !== 'undefined') {
+                // Use jQuery UI Datepicker
+                console.log('Using jQuery UI Datepicker');
+                $('.event-datepicker').datepicker({
+                    dateFormat: 'yy-mm-dd',
+                    minDate: 0,
+                    changeMonth: true,
+                    changeYear: true,
+                    showTime: false
+                });
+                
+            } else {
+                // Fallback to HTML5 datetime-local
+                console.log('Using HTML5 datetime-local fallback');
+                $('.event-datepicker').each(function() {
+                    $(this).attr('type', 'datetime-local');
+                    
+                    // Set minimum date to now
+                    var now = new Date();
+                    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                    $(this).attr('min', now.toISOString().slice(0, 16));
+                });
+            }
+            
+        } catch (error) {
+            console.error('Date picker initialization failed:', error);
+            
+            // Ultimate fallback
+            $('.event-datepicker').each(function() {
+                $(this).attr('type', 'datetime-local');
+                var now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                $(this).attr('min', now.toISOString().slice(0, 16));
+            });
+        }
+    }
+
+    // ENHANCED FORM SUBMISSION WITH BETTER DATE HANDLING
+    $(document).on('submit', '.ajax.gf', function(e) {
+        e.preventDefault();
+        
+        var form = $(this);
+        
+        // Validate and format dates before submission
+        var startDate = $('#start_date').val();
+        var endDate = $('#end_date').val();
+        
+        console.log('Original start date:', startDate);
+        console.log('Original end date:', endDate);
+        
+        // If using HTML5 datetime-local, convert to Y-m-d H:i format
+        if (startDate && startDate.includes('T')) {
+            startDate = startDate.replace('T', ' ').substring(0, 16); // Remove seconds if present
+            $('#start_date').val(startDate);
+        }
+        
+        if (endDate && endDate.includes('T')) {
+            endDate = endDate.replace('T', ' ').substring(0, 16); // Remove seconds if present
+            $('#end_date').val(endDate);
+        }
+        
+        console.log('Formatted start date:', $('#start_date').val());
+        console.log('Formatted end date:', $('#end_date').val());
+        
+        var formData = new FormData(this);
+        
+        // Show loading state
+        $('.uploadProgress').html('<i class="fa fa-spinner fa-spin"></i> Creating event...');
+        form.find('input[type="submit"]').prop('disabled', true);
+        
+        // Clear previous errors
+        $('.form-group').removeClass('has-error');
+        $('.help-block').remove();
+        
+        $.ajax({
+            url: form.attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                $('.uploadProgress').html('');
+                form.find('input[type="submit"]').prop('disabled', false);
+                
+                if (response.status === 'success') {
+                    $('#createEventModal').modal('hide');
+                    
+                    // Show success message
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success('Event created successfully!');
+                    } else {
+                        alert('Event created successfully!');
+                    }
+                    
+                    // Redirect or reload
+                    if (response.redirectUrl) {
+                        setTimeout(function() {
+                            window.location.href = response.redirectUrl;
+                        }, 1000);
+                    } else {
+                        location.reload();
+                    }
+                } else {
+                    // Show error messages
+                    showFormErrors(response.messages);
+                }
+            },
+            error: function(xhr) {
+                $('.uploadProgress').html('');
+                form.find('input[type="submit"]').prop('disabled', false);
+                
+                console.error('Error:', xhr.responseText);
+                
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.messages) {
+                        showFormErrors(response.messages);
+                    } else {
+                        alert('An error occurred while creating the event. Please try again.');
+                    }
+                } catch (e) {
+                    alert('An error occurred while creating the event. Please try again.');
+                }
+            }
+        });
+    });
+
+    function showFormErrors(errors) {
+        $.each(errors, function(field, messages) {
+            var fieldElement = $('[name="' + field + '"]');
+            var formGroup = fieldElement.closest('.form-group');
+            
+            formGroup.addClass('has-error');
+            
+            if (Array.isArray(messages)) {
+                messages.forEach(function(message) {
+                    formGroup.append('<span class="help-block">' + message + '</span>');
+                });
+            } else {
+                formGroup.append('<span class="help-block">' + messages + '</span>');
+            }
+        });
+        
+        // Scroll to first error
+        var firstError = $('.has-error').first();
+        if (firstError.length) {
+            firstError[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+});
+</script>
+
+{{-- Additional CSS for error styling --}}
+<style>
+.has-error .form-control {
+    border-color: #e74c3c;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 6px #ce8483;
+}
+
+.has-error .help-block {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
+
+.event-datepicker {
+    cursor: pointer;
+}
+
+.flatpickr-calendar {
+    z-index: 9999 !important;
+}
+
+.uploadProgress {
+    color: #007bff;
+    font-weight: 500;
+}
+
+.uploadProgress i {
+    margin-right: 5px;
+}
+</style>

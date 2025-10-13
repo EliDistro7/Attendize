@@ -61,7 +61,6 @@
                     </span>
                 </a>
 
-
                 <ul class="dropdown-menu" role="menu">
                     <li>
                         <a href="{{route('showCreateOrganiser')}}">
@@ -69,15 +68,32 @@
                             @lang("Top.create_organiser")
                         </a>
                     </li>
-                    @foreach($organisers as $org)
-                        <li>
-                            <a href="{{route('showOrganiserDashboard', ['organiser_id' => $org->id])}}">
-                                <i class="ico ico-building"></i> &nbsp;
-                                {{$org->name}}
-                            </a>
 
-                        </li>
-                    @endforeach
+                    {{-- DEBUG: Add this temporarily --}}
+                    @php
+                        \Log::info('=== MASTER BLADE DEBUG ===');
+                        \Log::info('Auth check: ' . (Auth::check() ? 'YES' : 'NO'));
+                        \Log::info('Auth user: ' . (Auth::check() ? Auth::user()->email : 'NONE'));
+                        \Log::info('Organisers variable isset: ' . (isset($organisers) ? 'YES' : 'NO'));
+                        if (isset($organisers)) {
+                            \Log::info('Organisers count: ' . $organisers->count());
+                        }
+                        \Log::info('All view variables: ' . implode(', ', array_keys(get_defined_vars())));
+                    @endphp
+
+                    @if(isset($organisers))
+                        @foreach($organisers as $org)
+                            <li>
+                                <a href="{{route('showOrganiserDashboard', ['organiser_id' => $org->id])}}">
+                                    <i class="ico ico-building"></i> &nbsp;
+                                    {{$org->name}}
+                                </a>
+                            </li>
+                        @endforeach
+                    @else
+                        <li><a href="#"><i class="ico ico-building"></i> No organisers found</a></li>
+                    @endif
+                    
                     <li class="divider"></li>
 
                     <li>
@@ -87,7 +103,6 @@
                     <li class="divider"></li>
                     <li><a data-href="{{route('showEditAccount')}}" data-modal-id="EditAccount" class="loadModal"
                            href="javascript:void(0);"><span class="icon ico-cog"></span>@lang("Top.account_settings")</a></li>
-
 
                     <li class="divider"></li>
                     <li><a target="_blank" href="https://github.com/Attendize/Attendize/issues/new?body=Version%20{{ config('attendize.version') }}"><span class="icon ico-megaphone"></span>@lang("Top.feedback_bug_report")</a></li>

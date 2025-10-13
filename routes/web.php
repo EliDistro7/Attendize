@@ -193,9 +193,19 @@ Route::group(
         )->name('showEventCheckoutPaymentReturn');
 
         Route::post('{event_id}/checkout/create',
-            [EventCheckoutController::class, 'postCreateOrder']
-        )->name('postCreateOrder');
+            [EventCheckoutController::class, 'postCreateOrderMobile']
+        )->name('postCreateOrderMobile');
+
+        // Mobile payment status routes
+        Route::get('{event_id}/payment/status/{transaction_id}', 
+            [EventCheckoutController::class, 'showMobilePaymentStatus']
+        )->name('showMobilePaymentStatus');
     });
+
+    // API route for mobile payment status check
+    Route::get('api/mobile-payment-status/{transaction_id}', 
+        [EventCheckoutController::class, 'getMobilePaymentStatus']
+    )->name('getMobilePaymentStatus');
 
     /*
      * Public view order routes
@@ -619,7 +629,6 @@ Route::group(
                 [EventSurveyController::class, 'postEnableQuestion']
             )->name('postEnableQuestion');
 
-
             /*
              * -------
              * Check In App
@@ -644,7 +653,6 @@ Route::group(
             Route::post('{event_id}/confirm_order_tickets/{order_id}',
                 [EventCheckInController::class, 'confirmOrderTicketsQr']
             )->name('confirmCheckInOrderTickets');
-
 
             /*
              * -------

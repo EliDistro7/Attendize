@@ -246,36 +246,117 @@ class EventCheckoutController extends Controller
      * @param $event_id
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
      */
-    public function showEventCheckout(Request $request, $event_id)
-    {
-        $order_session = session()->get('ticket_order_' . $event_id);
+ /**
+ * Show the checkout page
+ *
+ * @param Request $request
+ * @param $event_id
+ * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
+ */
+public function showEventCheckout(Request $request, $event_id)
+{
+    // Log the start of the checkout process
+    \Log::info('=== CHECKOUT DEBUG START ===', [
+        'event_id' => $event_id,
+        'request_data' => $request->all(),
+        'session_id' => session()->getId()
+    ]);
 
-        if (!$order_session || $order_session['expires'] < Carbon::now()) {
-            $route_name = $this->is_embedded ? 'showEmbeddedEventPage' : 'showEventPage';
-            return redirect()->route($route_name, ['event_id' => $event_id]);
-        }
+    $session_key = 'ticket_order_' . $event_id;
+    \Log::info('Looking for session key: ' . $session_key);
 
-        $secondsToExpire = Carbon::now()->diffInSeconds($order_session['expires']);
-
-        $event = Event::findorFail($order_session['event_id']);
-
-        $orderService = new OrderService($order_session['order_total'], $order_session['total_booking_fee'], $event);
-        $orderService->calculateFinalCosts();
-
-        $data = $order_session + [
-                'event'           => $event,
-                'secondsToExpire' => $secondsToExpire,
-                'is_embedded'     => $this->is_embedded,
-                'orderService'    => $orderService
-                ];
-
-        if ($this->is_embedded) {
-            return view('Public.ViewEvent.Embedded.EventPageCheckout', $data);
-        }
-
-        return view('Public.ViewEvent.EventPageCheckout', $data);
-
+    $order_session = session()->get($session_key);
+    
+    // Log session retrieval results
+    if (!$order_session) {
+        \Log::warning('No order session found', [
+            'session_key' => $session_key,
+            'all_session_data' => session()->all() // Be careful with this in production
+        ]);
+    } else {
+        \Log::info('Order session found', [
+            'session_key' => $session_key,
+            'session_data' => $order_session,
+            'expires_at' => $order_session['expires'] ?? 'not set',
+            'current_time' => Carbon::now()->toDateTimeString()
+        ]);
     }
+
+    // Check expiration
+    if (!$order_session || $order_session['expires'] < Carbon::now()) {
+        $reason = !$order_session ? 'session_not_found' : 'session_expired';
+        
+        \Log::warning('Redirecting due to invalid/expired session', [
+            'reason' => $reason,
+            'event_id' => $event_id,
+            'session_expires' => $order_session['expires'] ?? null,
+            'current_time' => Carbon::now()->toDateTimeString()
+        ]);
+
+        $route_name = $this->is_embedded ? 'showEmbeddedEventPage' : 'showEventPage';
+        return redirect()->route($route_name, ['event_id' => $event_id]);
+    }
+
+    $secondsToExpire = Carbon::now()->diffInSeconds($order_session['expires']);
+    \Log::info('Session timing', [
+        'seconds_to_expire' => $secondsToExpire,
+        'expires_at' => $order_session['expires']->toDateTimeString(),
+        'current_time' => Carbon::now()->toDateTimeString()
+    ]);
+
+    try {
+        $event = Event::findorFail($order_session['event_id']);
+        \Log::info('Event loaded successfully', [
+            'event_id' => $event->id,
+            'event_title' => $event->title ?? 'No title'
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Failed to load event', [
+            'event_id' => $order_session['event_id'],
+            'error' => $e->getMessage()
+        ]);
+        throw $e;
+    }
+
+    try {
+        $orderService = new OrderService($order_session['order_total'], $order_session['total_booking_fee'], $event);
+        \Log::info('OrderService created', [
+            'order_total' => $order_session['order_total'],
+            'total_booking_fee' => $order_session['total_booking_fee']
+        ]);
+
+        $orderService->calculateFinalCosts();
+        \Log::info('Final costs calculated', [
+            'final_costs' => method_exists($orderService, 'getFinalTotal') ? $orderService->getGrandTotal() : 'Cannot retrieve'
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('OrderService error', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        throw $e;
+    }
+
+    $data = $order_session + [
+        'event'           => $event,
+        'secondsToExpire' => $secondsToExpire,
+        'is_embedded'     => $this->is_embedded,
+        'orderService'    => $orderService
+    ];
+
+    \Log::info('Data prepared for view', [
+        'data_keys' => array_keys($data),
+        'is_embedded' => $this->is_embedded
+    ]);
+
+    if ($this->is_embedded) {
+        \Log::info('Rendering embedded checkout view');
+        return view('Public.ViewEvent.Embedded.EventPageCheckout', $data);
+    }
+
+    \Log::info('Rendering standard checkout view');
+    return view('Public.ViewEvent.EventPageCheckout', $data);
+}
 
     public function postValidateOrder(Request $request, $event_id)
     {
@@ -346,37 +427,64 @@ class EventCheckoutController extends Controller
 
     }
 
-    public function showEventPayment(Request $request, $event_id)
-    {
-        $order_session = session()->get('ticket_order_' . $event_id);
-        $event = Event::findOrFail($event_id);
+public function showEventPayment(Request $request, $event_id)
+{
+    $order_session = session()->get('ticket_order_' . $event_id);
+    $event = Event::findOrFail($event_id);
 
-        $payment_gateway = $order_session['payment_gateway'];
-        $order_total = $order_session['order_total'];
-        $account_payment_gateway = $order_session['account_payment_gateway'];
-
-        $orderService = new OrderService($order_session['order_total'], $order_session['total_booking_fee'], $event);
-        $orderService->calculateFinalCosts();
-
-        $payment_failed = $request->get('is_payment_failed') ? 1 : 0;
-
-        $secondsToExpire = Carbon::now()->diffInSeconds($order_session['expires']);
-
-        $viewData = ['event' => $event,
-                     'tickets' => $order_session['tickets'],
-                     'order_total' => $order_total,
-                     'orderService' => $orderService,
-                     'order_requires_payment'  => PaymentUtils::requiresPayment($order_total),
-                     'account_payment_gateway' => $account_payment_gateway,
-                     'payment_gateway' => $payment_gateway,
-                     'secondsToExpire' => $secondsToExpire,
-                     'payment_failed' => $payment_failed
-        ];
-
-        return view('Public.ViewEvent.EventPagePayment', $viewData);
+    // Check if order session exists and has required data
+    if (!$order_session || !is_array($order_session)) {
+        $route_name = $this->is_embedded ? 'showEmbeddedEventPage' : 'showEventPage';
+        return redirect()->route($route_name, ['event_id' => $event_id])
+            ->with('error', 'Your session has expired. Please start the checkout process again.');
     }
 
+    // Check if session has expired
+    if (isset($order_session['expires']) && $order_session['expires'] < Carbon::now()) {
+        $route_name = $this->is_embedded ? 'showEmbeddedEventPage' : 'showEventPage';
+        return redirect()->route($route_name, ['event_id' => $event_id])
+            ->with('error', 'Your session has expired. Please start the checkout process again.');
+    }
+
+    // Safely extract required data with fallbacks
+    $payment_gateway = $order_session['payment_gateway'] ?? null;
+    $order_total = $order_session['order_total'] ?? 0;
+    $account_payment_gateway = $order_session['account_payment_gateway'] ?? null;
+
+    // Fix config decoding issue from session serialization
+    if ($account_payment_gateway && is_string($account_payment_gateway->config)) {
+        $account_payment_gateway->config = json_decode($account_payment_gateway->config, true);
+    }
+
+    // Validate that essential payment data exists
+    if (!$payment_gateway && !$event->enable_offline_payments) {
+        return redirect()->route('showEventCheckout', ['event_id' => $event_id])
+            ->with('error', 'Payment gateway information is missing. Please restart the checkout process.');
+    }
+
+    $orderService = new OrderService($order_session['order_total'], $order_session['total_booking_fee'], $event);
+    $orderService->calculateFinalCosts();
+
+    $payment_failed = $request->get('is_payment_failed') ? 1 : 0;
+
+    $secondsToExpire = isset($order_session['expires']) ? Carbon::now()->diffInSeconds($order_session['expires']) : 0;
+
+    $viewData = [
+        'event' => $event,
+        'tickets' => $order_session['tickets'] ?? [],
+        'order_total' => $order_total,
+        'orderService' => $orderService,
+        'order_requires_payment' => PaymentUtils::requiresPayment($order_total),
+        'account_payment_gateway' => $account_payment_gateway,
+        'payment_gateway' => $payment_gateway,
+        'secondsToExpire' => $secondsToExpire,
+        'payment_failed' => $payment_failed
+    ];
+
+    return view('Public.ViewEvent.EventPagePayment', $viewData);
+}
     /**
+     * 
      * Create the order and start the payment for the order via Omnipay
      *
      *
@@ -470,7 +578,7 @@ class EventCheckoutController extends Controller
                     'message' => $response->getMessage(),
                 ]);
             }
-        } catch (\Exeption $e) {
+        } catch (\Exception $e) {
             Log::error($e);
             $error = 'Sorry, there was an error processing your payment. Please try again.';
         }
@@ -483,6 +591,787 @@ class EventCheckoutController extends Controller
         }
 
     }
+
+    public function postCreateOrderMobile(Request $request, $event_id)
+{
+    $request_data = $ticket_order = session()->get('ticket_order_' . $event_id . ".request_data",[0 => []]);
+    $request_data = array_merge($request_data[0], $request->except(['cardnumber', 'cvc']));
+
+    session()->remove('ticket_order_' . $event_id . '.request_data');
+    session()->push('ticket_order_' . $event_id . '.request_data', $request_data);
+
+    $ticket_order = session()->get('ticket_order_' . $event_id);
+
+    $event = Event::findOrFail($event_id);
+
+    $order_requires_payment = $ticket_order['order_requires_payment'];
+
+    // Handle offline payments
+    if ($order_requires_payment && $request->get('pay_offline') && $event->enable_offline_payments) {
+        return $this->completeOrder($event_id);
+    }
+
+    // Handle free orders
+    if (!$order_requires_payment) {
+        return $this->completeOrder($event_id);
+    }
+
+    // Handle Mobile Money payments for Tanzania
+    if ($request->has('payment_method') && $request->has('mobile_number')) {
+        return $this->processMobilePayment($request, $event_id, $ticket_order);
+    }
+
+    // Original Stripe/Gateway payment processing
+    try {
+        $order_service = new OrderService($ticket_order['order_total'], $ticket_order['total_booking_fee'], $event);
+        $order_service->calculateFinalCosts();
+
+        // Check if payment gateway config exists
+        if (!isset($ticket_order['account_payment_gateway']) || !$ticket_order['account_payment_gateway']) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Payment gateway not configured.',
+            ]);
+        }
+
+        $payment_gateway_config = $ticket_order['account_payment_gateway']->config + [
+                                                'testMode' => config('attendize.enable_test_payments')];
+
+        $payment_gateway_factory = new PaymentGatewayFactory();
+        $gateway = $payment_gateway_factory->create($ticket_order['payment_gateway']->name, $payment_gateway_config);
+        
+        // Extract request parameters for the gateway
+        $gateway->extractRequestParameters($request);
+
+        // Generic data needed for most orders
+        $order_total = $order_service->getGrandTotal();
+        $order_email = $ticket_order['request_data'][0]['order_email'];
+
+        $response = $gateway->startTransaction($order_total, $order_email, $event);
+
+        if ($response->isSuccessful()) {
+            session()->push('ticket_order_' . $event_id . '.transaction_id',
+                $response->getTransactionReference());
+
+            $additionalData = ($gateway->storeAdditionalData()) ? $gateway->getAdditionalData($response) : array();
+
+            session()->push('ticket_order_' . $event_id . '.transaction_data',
+                            $gateway->getTransactionData() + $additionalData);
+
+            $gateway->completeTransaction($additionalData);
+
+            return $this->completeOrder($event_id);
+
+        } elseif ($response->isRedirect()) {
+            $additionalData = ($gateway->storeAdditionalData()) ? $gateway->getAdditionalData($response) : array();
+
+            session()->push('ticket_order_' . $event_id . '.transaction_data',
+                            $gateway->getTransactionData() + $additionalData);
+
+            Log::info("Redirect url: " . $response->getRedirectUrl());
+
+            $return = [
+                'status'       => 'success',
+                'redirectUrl'  => $response->getRedirectUrl(),
+                'message'      => 'Redirecting to ' . $ticket_order['payment_gateway']->provider_name
+            ];
+
+            // GET method requests should not have redirectData on the JSON return string
+            if($response->getRedirectMethod() == 'POST') {
+                $return['redirectData'] = $response->getRedirectData();
+            }
+
+            return response()->json($return);
+
+        } else {
+            // Display error to customer
+            return response()->json([
+                'status'  => 'error',
+                'message' => $response->getMessage(),
+            ]);
+        }
+    } catch (\Exception $e) { // Fixed typo: was \Exeption
+        Log::error($e);
+        $error = 'Sorry, there was an error processing your payment. Please try again.';
+        
+        return response()->json([
+            'status'  => 'error',
+            'message' => $error,
+        ]);
+    }
+}
+
+/**
+ * Process mobile money payments for Tanzania
+ *
+ * @param Request $request
+ * @param $event_id
+ * @param $ticket_order
+ * @return \Illuminate\Http\JsonResponse
+ */
+private function processMobilePayment(Request $request, $event_id, $ticket_order)
+{
+    try {
+        // Debug: Log incoming request
+        Log::info('Mobile Payment Debug - Request Data:', [
+            'payment_method' => $request->get('payment_method'),
+            'mobile_number' => $request->get('mobile_number'),
+            'event_id' => $event_id,
+            'has_ticket_order' => !empty($ticket_order),
+            'full_request' => $request->all()
+        ]);
+
+        $payment_method = $request->get('payment_method');
+        $mobile_number = $request->get('mobile_number');
+        
+        // Debug: Check if these values exist
+        if (empty($payment_method) || empty($mobile_number)) {
+            Log::error('Mobile Payment Error: Missing required fields', [
+                'payment_method' => $payment_method,
+                'mobile_number' => $mobile_number
+            ]);
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Payment method and mobile number are required.'
+            ]);
+        }
+        
+        // Format mobile number
+        $formatted_mobile = '+255' . $mobile_number;
+        
+        // FIXED: Updated validation to match your frontend form values
+        $validator = Validator::make($request->all(), [
+            'payment_method' => 'required|in:mpesa,tigopesa,airtel', // Changed from 'airtelmoney' to 'airtel'
+            'mobile_number' => ['required', 'regex:/^[67][0-9]{8}$/']
+        ]);
+
+        if ($validator->fails()) {
+            Log::error('Mobile Payment Validation Failed:', [
+                'errors' => $validator->errors()->toArray(),
+                'payment_method_received' => $payment_method,
+                'mobile_number_received' => $mobile_number
+            ]);
+            
+            return response()->json([
+                'status'   => 'error',
+                'message'  => 'Invalid payment details.',
+                'errors'   => $validator->errors(),
+                'debug_info' => [
+                    'received_payment_method' => $payment_method,
+                    'expected_methods' => ['mpesa', 'tigopesa', 'airtel']
+                ]
+            ]);
+        }
+
+        // Debug: Check if event exists
+        $event = Event::findOrFail($event_id);
+        Log::info('Event found:', ['event_id' => $event->id, 'title' => $event->title]);
+
+        // Debug: Check ticket order structure
+        if (!isset($ticket_order['order_total']) || !isset($ticket_order['total_booking_fee'])) {
+            Log::error('Mobile Payment Error: Invalid ticket order structure', [
+                'ticket_order_keys' => array_keys($ticket_order ?? []),
+                'full_ticket_order' => $ticket_order
+            ]);
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid order data. Please try again.'
+            ]);
+        }
+
+        $order_service = new OrderService($ticket_order['order_total'], $ticket_order['total_booking_fee'], $event);
+        $order_service->calculateFinalCosts();
+        
+        $order_total = $order_service->getGrandTotal();
+        
+        Log::info('Order totals calculated:', [
+            'order_total' => $ticket_order['order_total'],
+            'booking_fee' => $ticket_order['total_booking_fee'],
+            'grand_total' => $order_total
+        ]);
+        
+        // Store mobile payment data in session for order completion
+        session()->push('ticket_order_' . $event_id . '.mobile_payment_data', [
+            'payment_method' => $payment_method,
+            'mobile_number' => $formatted_mobile,
+            'amount' => $order_total,
+            'initiated_at' => now(),
+        ]);
+
+        // Debug: Test session storage
+        $stored_data = session()->get('ticket_order_' . $event_id . '.mobile_payment_data');
+        Log::info('Session data stored:', ['stored_data' => $stored_data]);
+
+        // Here you would integrate with actual mobile money API
+        // For now, we'll simulate the process
+        $payment_result = $this->initiateMobilePayment($payment_method, $formatted_mobile, $order_total, $event_id);
+
+        Log::info('Payment result:', $payment_result);
+
+        if ($payment_result['success']) {
+            // Store transaction reference
+            session()->push('ticket_order_' . $event_id . '.transaction_id', $payment_result['transaction_id']);
+            
+            // Debug: Verify route exists
+            try {
+                $redirect_url = route('showMobilePaymentStatus', [
+                    'event_id' => $event_id,
+                    'transaction_id' => $payment_result['transaction_id']
+                ]);
+                
+                Log::info('Redirect URL generated successfully:', [
+                    'url' => $redirect_url,
+                    'route_exists' => true
+                ]);
+                
+            } catch (\Exception $route_error) {
+                Log::error('Route generation error:', [
+                    'error' => $route_error->getMessage(),
+                    'trying_fallback' => true
+                ]);
+                
+                // Fallback redirect
+                $redirect_url = url("/events/{$event_id}/payment/status/{$payment_result['transaction_id']}");
+                
+                Log::info('Using fallback URL:', ['url' => $redirect_url]);
+            }
+            
+            $response_data = [
+                'status'  => 'success',
+                'message' => $payment_result['message'],
+                'payment_method' => $payment_method,
+                'mobile_number' => $formatted_mobile,
+                'transaction_id' => $payment_result['transaction_id'],
+                'redirectUrl' => $redirect_url
+            ];
+            
+            Log::info('Returning success response:', $response_data);
+            
+            return response()->json($response_data);
+        } else {
+            Log::error('Payment initiation failed:', $payment_result);
+            
+            return response()->json([
+                'status'  => 'error',
+                'message' => $payment_result['message']
+            ]);
+        }
+
+    } catch (\Exception $e) {
+        // Enhanced error logging
+        Log::error('Mobile Payment Error Details:', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+            'request_data' => $request->all(),
+            'event_id' => $event_id,
+            'session_data' => session()->get('ticket_order_' . $event_id)
+        ]);
+        
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'Error processing mobile payment. Please try again.',
+            'debug' => config('app.debug') ? $e->getMessage() : null // Only show in debug mode
+        ]);
+    }
+}
+
+/**
+ * Enhanced initiateMobilePayment with error handling
+ */
+private function initiateMobilePayment($payment_method, $mobile_number, $amount, $event_id)
+{
+    try {
+        $transaction_id = 'TXN' . time() . rand(1000, 9999);
+        
+        // Debug: Log payment initiation
+        Log::info('Initiating mobile payment:', [
+            'payment_method' => $payment_method,
+            'mobile_number' => $mobile_number,
+            'amount' => $amount,
+            'event_id' => $event_id,
+            'transaction_id' => $transaction_id
+        ]);
+        
+        // UPDATED: Check if payment gateway exists - fixed mapping
+        $gateway_mapping = [
+            'mpesa' => 'MPesa',
+            'tigopesa' => 'TigoPesa', 
+            'airtel' => 'AirtelMoney', // Changed from 'airtelmoney' to 'airtel'
+        ];
+        
+        $gateway_name = $gateway_mapping[$payment_method] ?? null;
+        if (!$gateway_name) {
+            throw new \Exception("Unsupported payment method: {$payment_method}");
+        }
+        
+        // Try to get payment gateway ID (optional for testing)
+        try {
+            $payment_gateway_id = DB::table('payment_gateways')
+                               ->where('name', $gateway_name)
+                               ->value('id');
+                               
+            if ($payment_gateway_id) {
+                Log::info('Payment gateway found:', ['gateway_id' => $payment_gateway_id, 'name' => $gateway_name]);
+            } else {
+                Log::info('Payment gateway not found in database:', ['name' => $gateway_name]);
+            }
+        } catch (\Exception $db_error) {
+            Log::warning('Could not find payment gateway in database:', ['error' => $db_error->getMessage()]);
+            $payment_gateway_id = null; // Continue without database logging for now
+        }
+        
+        // UPDATED: Provider names mapping
+        $provider_names = [
+            'mpesa' => 'M-Pesa',
+            'tigopesa' => 'Tigo Pesa', 
+            'airtel' => 'Airtel Money', // Changed from 'airtelmoney' to 'airtel'
+        ];
+        
+        $provider_name = $provider_names[$payment_method] ?? 'Mobile Money';
+        
+        Log::info("Mobile Payment Simulation Successful", [
+            'payment_method' => $payment_method,
+            'mobile_number' => $mobile_number,
+            'amount' => $amount,
+            'transaction_id' => $transaction_id,
+            'provider_name' => $provider_name
+        ]);
+        
+        return [
+            'success' => true,
+            'transaction_id' => $transaction_id,
+            'message' => "Payment request sent to {$mobile_number} via {$provider_name}. Please check your phone and follow the prompts to complete the payment."
+        ];
+        
+    } catch (\Exception $e) {
+        Log::error('initiateMobilePayment Error:', [
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'payment_method' => $payment_method ?? 'unknown'
+        ]);
+        
+        return [
+            'success' => false,
+            'message' => 'Failed to initiate mobile payment: ' . $e->getMessage()
+        ];
+    }
+}
+
+public function showMobilePaymentStatus(Request $request, $event_id, $transaction_id)
+{
+    $event = Event::findOrFail($event_id);
+    
+    $ticket_order = session()->get('ticket_order_' . $event_id, []);
+    $orderService = null;
+    
+    if (isset($ticket_order['order_total']) && isset($ticket_order['total_booking_fee'])) {
+        $orderService = new OrderService($ticket_order['order_total'], $ticket_order['total_booking_fee'], $event);
+        $orderService->calculateFinalCosts();
+    }
+    
+    return view('Public.ViewEvent.MobilePaymentStatus', [
+        'event' => $event,
+        'transaction_id' => $transaction_id,
+        'orderService' => $orderService,
+        'status' => 'processing'
+    ]);
+}
+
+private function getNetworkProvider($payment_method)
+{
+    $providers = [
+        'mpesa' => 'Vodacom',
+        'tigopesa' => 'Tigo',
+        'airtelmoney' => 'Airtel',
+        'halopesa' => 'HaloPesa'
+    ];
+    
+    return $providers[$payment_method] ?? 'Unknown';
+}
+
+
+
+
+/**
+ * API endpoint to check mobile payment status via AJAX
+ *
+ * @param $transaction_id
+ * @return \Illuminate\Http\JsonResponse
+ */
+/**
+ * API endpoint to check mobile payment status via AJAX
+ *
+ * @param $transaction_id
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function getMobilePaymentStatus($transaction_id)
+{
+    try {
+        Log::info('Mobile Payment Status Check Started:', [
+            'transaction_id' => $transaction_id,
+            'session_id' => session()->getId()
+        ]);
+
+        // Get event_id from the transaction_id pattern or session
+        $event_id = null;
+        
+        // Method 1: Try to extract from session data
+        foreach (session()->all() as $key => $value) {
+            if (strpos($key, 'ticket_order_') === 0 && is_array($value)) {
+                // Check if this session contains our transaction
+                $stored_transactions = $value['transaction_id'] ?? [];
+                if (is_array($stored_transactions) && in_array($transaction_id, $stored_transactions)) {
+                    $event_id = str_replace('ticket_order_', '', $key);
+                    break;
+                }
+            }
+        }
+
+        // Method 2: If not found in session, try to parse from transaction ID if it follows a pattern
+        if (!$event_id && preg_match('/TXN\d+(\d{4})$/', $transaction_id, $matches)) {
+            // This is a fallback if your transaction IDs contain event info
+            // You might need to adjust this based on your transaction ID format
+        }
+
+        Log::info('Event ID Resolution:', [
+            'event_id' => $event_id,
+            'transaction_id' => $transaction_id
+        ]);
+
+        // Simulation logic for testing (since you don't have real payment provider yet)
+        $status = $this->simulatePaymentStatusCheck($transaction_id);
+        $message = $this->getPaymentStatusMessage($status);
+        $redirect_url = null;
+
+        if ($status === 'completed' && $event_id) {
+            // For mobile payments, we need to complete the order differently
+            $completion_result = $this->completeMobileOrderFlow($event_id, $transaction_id);
+            
+            if ($completion_result['success']) {
+                Log::info('Mobile Payment Order Completed Successfully:', [
+                    'event_id' => $event_id,
+                    'transaction_id' => $transaction_id
+                ]);
+                $redirect_url = $completion_result['redirect_url'];
+            } else {
+                $status = 'failed';
+                $message = $completion_result['message'];
+            }
+        }
+
+        return response()->json([
+            'status' => $status,
+            'message' => $message,
+            'redirect_url' => $redirect_url,
+            'transaction_id' => $transaction_id
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Mobile Payment Status Check Error:', [
+            'transaction_id' => $transaction_id,
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Unable to check payment status. Please try again.'
+        ], 500);
+    }
+}
+
+/**
+ * Complete mobile order flow when payment is successful
+ */
+private function completeMobileOrderFlow($event_id, $transaction_id)
+{
+    Log::info('Starting mobile order flow completion', [
+        'event_id' => $event_id,
+        'transaction_id' => $transaction_id,
+        'timestamp' => now()->toDateTimeString()
+    ]);
+
+    try {
+        // Get the ticket order from session
+        $ticket_order = session()->get('ticket_order_' . $event_id);
+        
+        Log::info('Retrieved ticket order from session', [
+            'event_id' => $event_id,
+            'transaction_id' => $transaction_id,
+            'has_ticket_order' => !is_null($ticket_order),
+            'ticket_order_keys' => $ticket_order ? array_keys($ticket_order) : null
+        ]);
+        
+        if (!$ticket_order) {
+            Log::error('No ticket order found in session for mobile payment completion', [
+                'event_id' => $event_id,
+                'transaction_id' => $transaction_id
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Session expired. Please restart your order.'
+            ];
+        }
+
+        // Make sure we have the transaction ID in the session
+        Log::info('Checking transaction ID in session', [
+            'event_id' => $event_id,
+            'transaction_id' => $transaction_id,
+            'has_transaction_id_key' => isset($ticket_order['transaction_id']),
+            'is_array' => isset($ticket_order['transaction_id']) ? is_array($ticket_order['transaction_id']) : false,
+            'existing_transaction_ids' => $ticket_order['transaction_id'] ?? null
+        ]);
+
+        if (!isset($ticket_order['transaction_id']) || !is_array($ticket_order['transaction_id'])) {
+            Log::info('Setting transaction ID array in session', [
+                'event_id' => $event_id,
+                'transaction_id' => $transaction_id
+            ]);
+            session()->put('ticket_order_' . $event_id . '.transaction_id', [$transaction_id]);
+        } elseif (!in_array($transaction_id, $ticket_order['transaction_id'])) {
+            Log::info('Adding transaction ID to existing array in session', [
+                'event_id' => $event_id,
+                'new_transaction_id' => $transaction_id,
+                'existing_transaction_ids' => $ticket_order['transaction_id']
+            ]);
+            session()->push('ticket_order_' . $event_id . '.transaction_id', $transaction_id);
+        } else {
+            Log::info('Transaction ID already exists in session', [
+                'event_id' => $event_id,
+                'transaction_id' => $transaction_id,
+                'existing_transaction_ids' => $ticket_order['transaction_id']
+            ]);
+        }
+
+        // Set up mobile payment transaction data
+        $mobile_payment_data = session()->get('ticket_order_' . $event_id . '.mobile_payment_data');
+        
+        Log::info('Processing mobile payment data', [
+            'event_id' => $event_id,
+            'transaction_id' => $transaction_id,
+            'has_mobile_payment_data' => !is_null($mobile_payment_data),
+            'is_array' => is_array($mobile_payment_data),
+            'data_count' => is_array($mobile_payment_data) ? count($mobile_payment_data) : 0
+        ]);
+
+        if ($mobile_payment_data && is_array($mobile_payment_data)) {
+            $payment_data = end($mobile_payment_data); // Get the last entry
+            
+            Log::info('Retrieved last payment data entry', [
+                'event_id' => $event_id,
+                'transaction_id' => $transaction_id,
+                'payment_method' => $payment_data['payment_method'] ?? 'not_set',
+                'mobile_number' => isset($payment_data['mobile_number']) ? 'xxx-xxx-' . substr($payment_data['mobile_number'], -4) : 'not_set',
+                'amount' => $payment_data['amount'] ?? 'not_set'
+            ]);
+            
+            $transaction_data = [
+                'payment_method' => $payment_data['payment_method'] ?? 'mobile_money',
+                'mobile_number' => $payment_data['mobile_number'] ?? '',
+                'amount' => $payment_data['amount'] ?? 0,
+                'transaction_id' => $transaction_id,
+                'completed_at' => now()->toDateTimeString()
+            ];
+
+            session()->push('ticket_order_' . $event_id . '.transaction_data', $transaction_data);
+            
+            Log::info('Added transaction data to session', [
+                'event_id' => $event_id,
+                'transaction_id' => $transaction_id,
+                'transaction_data' => array_merge($transaction_data, [
+                    'mobile_number' => isset($transaction_data['mobile_number']) ? 'xxx-xxx-' . substr($transaction_data['mobile_number'], -4) : 'not_set'
+                ])
+            ]);
+        } else {
+            Log::warning('No valid mobile payment data found', [
+                'event_id' => $event_id,
+                'transaction_id' => $transaction_id
+            ]);
+        }
+
+        // Complete the order using existing method
+        Log::info('Calling completeOrder method', [
+            'event_id' => $event_id,
+            'transaction_id' => $transaction_id,
+            'is_mobile' => true
+        ]);
+
+        $result = $this->completeOrder($event_id, true);
+        
+        Log::info('CompleteOrder method returned', [
+            'event_id' => $event_id,
+            'transaction_id' => $transaction_id,
+            'result_type' => get_class($result),
+            'is_json_response' => $result instanceof \Illuminate\Http\JsonResponse
+        ]);
+        
+        if ($result instanceof \Illuminate\Http\JsonResponse) {
+            $response_data = json_decode($result->getContent(), true);
+            
+            Log::info('Parsed JSON response from completeOrder', [
+                'event_id' => $event_id,
+                'transaction_id' => $transaction_id,
+                'response_status' => $response_data['status'] ?? 'unknown',
+                'has_redirect_url' => isset($response_data['redirectUrl']),
+                'response_keys' => array_keys($response_data ?? [])
+            ]);
+            
+            if ($response_data['status'] === 'success') {
+                Log::info('Mobile order flow completed successfully', [
+                    'event_id' => $event_id,
+                    'transaction_id' => $transaction_id,
+                    'redirect_url' => $response_data['redirectUrl'] ?? 'not_provided'
+                ]);
+
+                return [
+                    'success' => true,
+                    'redirect_url' => $response_data['redirectUrl'],
+                    'message' => 'Order completed successfully'
+                ];
+            } else {
+                Log::warning('CompleteOrder returned non-success status', [
+                    'event_id' => $event_id,
+                    'transaction_id' => $transaction_id,
+                    'status' => $response_data['status'] ?? 'unknown',
+                    'response_data' => $response_data
+                ]);
+            }
+        } else {
+            Log::warning('CompleteOrder returned unexpected result type', [
+                'event_id' => $event_id,
+                'transaction_id' => $transaction_id,
+                'result_type' => get_class($result),
+                'result_content' => method_exists($result, 'getContent') ? $result->getContent() : 'no_content_method'
+            ]);
+        }
+
+        Log::error('Mobile order flow failed - returning failure response', [
+            'event_id' => $event_id,
+            'transaction_id' => $transaction_id
+        ]);
+
+        return [
+            'success' => false,
+            'message' => 'Failed to complete order'
+        ];
+
+    } catch (\Exception $e) {
+        Log::error('Mobile order completion error:', [
+            'event_id' => $event_id,
+            'transaction_id' => $transaction_id,
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return [
+            'success' => false,
+            'message' => 'Error completing mobile payment order'
+        ];
+    }
+}
+/**
+ * Enhanced simulation with better state management
+ */
+private function simulatePaymentStatusCheck($transaction_id)
+{
+    $session_key = 'payment_simulation_' . $transaction_id;
+    $simulation_data = session($session_key, [
+        'created_at' => now(),
+        'checks' => 0,
+        'final_status' => null
+    ]);
+
+    $simulation_data['checks']++;
+
+    Log::info('Payment Simulation Check:', [
+        'transaction_id' => $transaction_id,
+        'check_number' => $simulation_data['checks']
+    ]);
+
+    // Complete after first check for immediate testing
+    $status = $simulation_data['checks'] >= 2 ? 'completed' : 'processing';
+
+    // Store updated simulation data
+    $simulation_data['final_status'] = $status;
+    session([$session_key => $simulation_data]);
+
+    return $status;
+}
+/**
+ * Simulate payment status for testing purposes
+ */
+
+
+/**
+ * Handle successful payment completion
+ */
+private function handleSuccessfulPayment($event_id, $transaction_id)
+{
+    try {
+        // Complete the order
+        $result = $this->completeOrder($event_id);
+        
+        if ($result instanceof \Illuminate\Http\RedirectResponse) {
+            return $result->getTargetUrl();
+        }
+        
+        // Fallback redirect
+        return route('showEventCheckoutPaymentReturn', ['event_id' => $event_id]);
+        
+    } catch (\Exception $e) {
+        Log::error('Error completing order after successful payment:', [
+            'event_id' => $event_id,
+            'transaction_id' => $transaction_id,
+            'error' => $e->getMessage()
+        ]);
+        
+        return route('showEventPage', ['event_id' => $event_id]);
+    }
+}
+
+/**
+ * Get user-friendly payment status messages
+ */
+private function getPaymentStatusMessage($status, $payment_record = null)
+{
+    $messages = [
+        'processing' => 'Payment is being processed. Please check your phone for prompts.',
+        'completed' => 'Payment completed successfully! Redirecting...',
+        'failed' => 'Payment failed. Please try again.',
+        'timeout' => 'Payment request timed out. Please try again.',
+        'error' => 'Unable to process payment. Please contact support.'
+    ];
+
+    $message = $messages[$status] ?? 'Unknown payment status';
+
+    // Add specific error details from payment record if available
+    if ($payment_record && $status === 'failed' && !empty($payment_record->provider_response)) {
+        $message .= ' Reason: ' . $payment_record->provider_response;
+    }
+
+    return $message;
+}
+
+private function getFailureMessage($scenario)
+{
+    $messages = [
+        'insufficient_funds' => 'Insufficient balance in mobile money account',
+        'network_error' => 'Network connectivity issues with mobile money provider',
+        'timeout' => 'User did not complete payment within the specified time limit'
+    ];
+    
+    return $messages[$scenario] ?? 'Payment processing failed';
+}
 
     /**
      * Handles the return when a payment is off site
@@ -733,6 +1622,7 @@ class EventCheckoutController extends Controller
         }
 
         if ($return_json) {
+
             return response()->json([
                 'status'      => 'success',
                 'redirectUrl' => route('showOrderDetails', [
@@ -818,5 +1708,76 @@ class EventCheckoutController extends Controller
         }
         return view('Public.ViewEvent.Partials.PDFTicket', $data);
     }
+
+
+
+private function completeMobileOrder($event_id, $transaction_id)
+{
+    try {
+        // Get the mobile payment data from payment_test_records
+        $payment_record = DB::table('payment_test_records')
+                         ->where('transaction_id', $transaction_id)
+                         ->first();
+        
+        if (!$payment_record) {
+            return ['success' => false, 'message' => 'Payment record not found'];
+        }
+        
+        // Get the payment gateway for mobile money
+        $mobile_gateway = DB::table('payment_gateways')
+                           ->where('name', 'MobileMoney') // or map based on payment_method
+                           ->first();
+        
+        if (!$mobile_gateway) {
+            // Fallback to a default gateway or create one
+            $mobile_gateway = DB::table('payment_gateways')
+                             ->where('name', 'MPesa')
+                             ->first();
+        }
+        
+        // Update session data with mobile payment info
+        $ticket_order = session()->get('ticket_order_' . $event_id);
+        
+        if (!$ticket_order) {
+            return ['success' => false, 'message' => 'Session expired. Please start over.'];
+        }
+        
+        // Set mobile payment gateway info
+        $ticket_order['payment_gateway'] = $mobile_gateway;
+        $ticket_order['transaction_id'] = [$transaction_id];
+        
+        // Update session
+        session()->put('ticket_order_' . $event_id, $ticket_order);
+        
+        // Call the existing completeOrder method
+        $result = $this->completeOrder($event_id, true);
+        
+        $response_data = json_decode($result->getContent(), true);
+        
+        return [
+            'success' => $response_data['status'] === 'success',
+            'redirect_url' => $response_data['redirectUrl'] ?? null,
+            'message' => $response_data['message'] ?? 'Order completed'
+        ];
+        
+    } catch (\Exception $e) {
+        Log::error('Mobile order completion error: ' . $e->getMessage());
+        return ['success' => false, 'message' => 'Error completing order'];
+    }
+}
+
+private function getStatusMessage($status)
+{
+    $messages = [
+        'pending' => 'Payment is being processed',
+        'processing' => 'Payment is being processed',
+        'completed' => 'Payment completed successfully',
+        'failed' => 'Payment failed',
+        'cancelled' => 'Payment was cancelled',
+        'timeout' => 'Payment timed out'
+    ];
+    
+    return $messages[$status] ?? 'Unknown status';
+}
 
 }
