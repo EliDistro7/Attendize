@@ -62,12 +62,17 @@ COPY ssl-params.conf /etc/nginx/snippets/ssl-params.conf
 # Create startup script that runs cache commands with runtime .env
 RUN echo '#!/bin/bash\n\
 set -e\n\
+# Ensure app is not in maintenance mode\n\
+php artisan up || true\n\
 # Run Laravel optimization with runtime environment\n\
 php artisan config:cache\n\
 php artisan route:cache\n\
 php artisan view:cache\n\
-# Start services\n\
+# Start PHP-FPM in background\n\
 php-fpm -D\n\
+# Wait for PHP-FPM to be ready\n\
+sleep 2\n\
+# Start nginx in foreground\n\
 nginx -g "daemon off;"' > /start.sh && chmod +x /start.sh
 
 # Ports to expose
