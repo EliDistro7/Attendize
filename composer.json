@@ -107,7 +107,7 @@
         "allow-plugins": {
             "kylekatarnls/update-helper": true,
             "php-http/discovery": true
-        },
+        }
       
     },
     "extra": {
