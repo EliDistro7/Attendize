@@ -30,8 +30,15 @@ RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 WORKDIR /usr/share/nginx/html
 COPY . .
 
-# run composer, chmod files, setup laravel key
-RUN ./scripts/setup
+# Install composer dependencies first
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# run chmod files, setup laravel key
+RUN chmod -R 755 storage bootstrap/cache \
+    && php artisan key:generate --force \
+    && php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
 
 # The worker container runs the laravel queue in the background
 FROM base as worker
