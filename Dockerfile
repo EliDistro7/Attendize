@@ -74,18 +74,54 @@ COPY ssl-params.conf /etc/nginx/snippets/ssl-params.conf
 RUN sed -i 's/user\s*nginx;/user www-data;/' /etc/nginx/nginx.conf || \
     sed -i '1iuser www-data;' /etc/nginx/nginx.conf
 
-# Create startup script that runs cache commands with runtime .env
+# Create startup script that runs migrations, seeders, and cache commands with runtime .env
 RUN echo '#!/bin/bash\n\
 set -e\n\
+\n\
+echo "Starting application initialization..."\n\
+\n\
 # Ensure permissions are correct at runtime\n\
+echo "Setting permissions..."\n\
 chown -R www-data:www-data /usr/share/nginx/html/storage /usr/share/nginx/html/bootstrap/cache\n\
 chmod -R 775 /usr/share/nginx/html/storage /usr/share/nginx/html/bootstrap/cache\n\
+\n\
+# Wait for database to be ready\n\
+echo "Waiting for database connection..."\n\
+max_tries=30\n\
+count=0\n\
+until php artisan db:monitor --max-attempts=1 2>/dev/null || [ $count -eq $max_tries ]; do\n\
+  echo "Database not ready yet... waiting (attempt $((count+1))/$max_tries)"\n\
+  sleep 2\n\
+  count=$((count+1))\n\
+done\n\
+\n\
+if [ $count -eq $max_tries ]; then\n\
+  echo "Warning: Could not verify database connection, proceeding anyway..."\n\
+fi\n\
+\n\
+# Run migrations\n\
+echo "Running database migrations..."\n\
+php artisan migrate --force || echo "Warning: Migrations failed or already run"\n\
+\n\
+# Run seeders (only if tables are empty - prevents duplicate seeding)\n\
+echo "Checking if database seeding is needed..."\n\
+php artisan db:seed --force --class=TimezonesTableSeeder 2>/dev/null || echo "Timezones seeder already run or failed"\n\
+php artisan db:seed --force --class=CurrenciesTableSeeder 2>/dev/null || echo "Currencies seeder already run or failed"\n\
+php artisan db:seed --force --class=CountriesTableSeeder 2>/dev/null || echo "Countries seeder already run or failed"\n\
+\n\
 # Run Laravel optimization with runtime environment\n\
+echo "Optimizing Laravel..."\n\
 php artisan config:cache\n\
 php artisan route:cache\n\
 php artisan view:cache\n\
+\n\
+echo "Application initialization complete!"\n\
+\n\
 # Start services\n\
+echo "Starting PHP-FPM..."\n\
 php-fpm -D\n\
+\n\
+echo "Starting Nginx..."\n\
 nginx -g "daemon off;"' > /start.sh && chmod +x /start.sh
 
 # Ports to expose
