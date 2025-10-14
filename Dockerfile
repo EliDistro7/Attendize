@@ -31,8 +31,19 @@ COPY . .
 # Install composer dependencies first
 RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=php --no-scripts
 
-# Set permissions (cache commands will run at startup with real .env)
-RUN chmod -R 755 storage bootstrap/cache
+# FIXED: Set proper permissions for Laravel storage directories
+# Create necessary directories if they don't exist
+RUN mkdir -p storage/framework/sessions \
+    storage/framework/views \
+    storage/framework/cache \
+    storage/logs \
+    bootstrap/cache
+
+# Set ownership to www-data (default PHP-FPM user)
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+# Set proper permissions (775 = owner+group can write, others can read)
+RUN chmod -R 775 storage bootstrap/cache
 
 # The worker container runs the laravel queue in the background
 FROM base as worker
@@ -59,9 +70,16 @@ RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 COPY self-signed.conf /etc/nginx/snippets/self-signed.conf
 COPY ssl-params.conf /etc/nginx/snippets/ssl-params.conf
 
+# Configure nginx to run as www-data user
+RUN sed -i 's/user\s*nginx;/user www-data;/' /etc/nginx/nginx.conf || \
+    sed -i '1iuser www-data;' /etc/nginx/nginx.conf
+
 # Create startup script that runs cache commands with runtime .env
 RUN echo '#!/bin/bash\n\
 set -e\n\
+# Ensure permissions are correct at runtime\n\
+chown -R www-data:www-data /usr/share/nginx/html/storage /usr/share/nginx/html/bootstrap/cache\n\
+chmod -R 775 /usr/share/nginx/html/storage /usr/share/nginx/html/bootstrap/cache\n\
 # Run Laravel optimization with runtime environment\n\
 php artisan config:cache\n\
 php artisan route:cache\n\
