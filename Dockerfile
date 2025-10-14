@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y \
     libxrender1 \
     libgmp-dev \
     supervisor \
-    default-mysql-client \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip gmp \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -32,9 +31,8 @@ COPY . .
 # Install composer dependencies first
 RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=php --no-scripts
 
-# Set permissions and ownership for storage directories
-RUN chmod -R 775 storage bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache
+# Set permissions (cache commands will run at startup with real .env)
+RUN chmod -R 755 storage bootstrap/cache
 
 # The worker container runs the laravel queue in the background
 FROM base as worker
@@ -64,19 +62,12 @@ COPY ssl-params.conf /etc/nginx/snippets/ssl-params.conf
 # Create startup script that runs cache commands with runtime .env
 RUN echo '#!/bin/bash\n\
 set -e\n\
-# Ensure app is not in maintenance mode\n\
-php artisan up || true\n\
-# Run database migrations with custom command\n\
-php artisan migrate:no-pk-check --force\n\
 # Run Laravel optimization with runtime environment\n\
 php artisan config:cache\n\
 php artisan route:cache\n\
 php artisan view:cache\n\
-# Start PHP-FPM in background\n\
+# Start services\n\
 php-fpm -D\n\
-# Wait for PHP-FPM to be ready\n\
-sleep 2\n\
-# Start nginx in foreground\n\
 nginx -g "daemon off;"' > /start.sh && chmod +x /start.sh
 
 # Ports to expose
