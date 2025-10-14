@@ -206,6 +206,10 @@ Route::group(
     Route::get('api/mobile-payment-status/{transaction_id}', 
         [EventCheckoutController::class, 'getMobilePaymentStatus']
     )->name('getMobilePaymentStatus');
+    
+    Route::get('/terms-and-conditions', function () {
+    return view('termsAndConditions');
+})->name('termsAndConditions');
 
     /*
      * Public view order routes
