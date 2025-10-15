@@ -6,6 +6,7 @@ use Redirect;
 use App\Attendize\Utils;
 use App\Models\Account;
 use App\Models\User;
+use App\Models\Timezone;
 use App\Models\PaymentGateway;
 use App\Models\AccountPaymentGateway;
 use Hash;
@@ -69,8 +70,20 @@ class UserSignupController extends Controller
         }
 
         $account_data = $request->only(['email', 'first_name', 'last_name']);
-        $account_data['currency_id'] = config('attendize.default_currency');
-        $account_data['timezone_id'] = config('attendize.default_timezone');
+        $account_data['currency_id'] = config('attendize.default_currency', 2);
+        
+        // ✅ FIX: Get default timezone with fallback to first available timezone
+        $defaultTimezoneId = config('attendize.default_timezone', 1);
+        
+        // Verify the timezone exists in database, if not use the first available one
+        $timezoneExists = Timezone::where('id', $defaultTimezoneId)->exists();
+        if (!$timezoneExists) {
+            $firstTimezone = Timezone::first();
+            $defaultTimezoneId = $firstTimezone ? $firstTimezone->id : 1;
+            \Log::warning("Default timezone ID from config doesn't exist. Using timezone ID: {$defaultTimezoneId}");
+        }
+        
+        $account_data['timezone_id'] = $defaultTimezoneId;
         $account = Account::create($account_data);
 
         $user = new User();
