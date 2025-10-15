@@ -99,6 +99,10 @@ if [ $count -eq $max_tries ]; then\n\
   echo "Warning: Could not verify database connection, proceeding anyway..."\n\
 fi\n\
 \n\
+# Ensure app is not in maintenance mode\n\
+echo "Taking application out of maintenance mode..."\n\
+php artisan up || echo "App was not in maintenance mode"\n\
+\n\
 # Run migrations\n\
 echo "Running database migrations..."\n\
 php artisan migrate --force || echo "Warning: Migrations failed or already run"\n\
@@ -109,11 +113,22 @@ php artisan db:seed --force --class=TimezonesTableSeeder 2>/dev/null || echo "Ti
 php artisan db:seed --force --class=CurrenciesTableSeeder 2>/dev/null || echo "Currencies seeder already run or failed"\n\
 php artisan db:seed --force --class=CountriesTableSeeder 2>/dev/null || echo "Countries seeder already run or failed"\n\
 \n\
+# Ensure app is not in maintenance mode\n\
+echo "Taking application out of maintenance mode..."\n\
+php artisan up 2>/dev/null || echo "App was not in maintenance mode"\n\
+\n\
+# Clear all caches first to prevent stale config issues\n\
+echo "Clearing caches..."\n\
+php artisan config:clear 2>/dev/null || true\n\
+php artisan route:clear 2>/dev/null || true\n\
+php artisan view:clear 2>/dev/null || true\n\
+php artisan cache:clear 2>/dev/null || true\n\
+\n\
 # Run Laravel optimization with runtime environment\n\
 echo "Optimizing Laravel..."\n\
-php artisan config:cache\n\
-php artisan route:cache\n\
-php artisan view:cache\n\
+php artisan config:cache || echo "Warning: Config cache failed"\n\
+php artisan route:cache || echo "Warning: Route cache failed"\n\
+php artisan view:cache || echo "Warning: View cache failed"\n\
 \n\
 echo "Application initialization complete!"\n\
 \n\
