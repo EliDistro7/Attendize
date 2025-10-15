@@ -107,11 +107,23 @@ php artisan up || echo "App was not in maintenance mode"\n\
 echo "Running database migrations..."\n\
 php artisan migrate --force || echo "Warning: Migrations failed or already run"\n\
 \n\
-# Run seeders (only if tables are empty - prevents duplicate seeding)\n\
-echo "Checking if database seeding is needed..."\n\
-php artisan db:seed --force --class=TimezonesTableSeeder 2>/dev/null || echo "Timezones seeder already run or failed"\n\
-php artisan db:seed --force --class=CurrenciesTableSeeder 2>/dev/null || echo "Currencies seeder already run or failed"\n\
-php artisan db:seed --force --class=CountriesTableSeeder 2>/dev/null || echo "Countries seeder already run or failed"\n\
+# Run seeders - CRITICAL for foreign key constraints\n\
+echo "Seeding essential database tables..."\n\
+echo "Seeding timezones..."\n\
+php artisan db:seed --force --class=TimezonesTableSeeder || {\n\
+  echo "ERROR: Timezone seeder failed! Attempting direct insert..."\n\
+  php artisan tinker --execute="DB::table('\''timezones'\'')->insert(['\''id'\'' => 1, '\''name'\'' => '\''UTC'\'', '\''location'\'' => '\''UTC'\'']);" || true\n\
+}\n\
+\n\
+echo "Seeding currencies..."\n\
+php artisan db:seed --force --class=CurrenciesTableSeeder || echo "Warning: Currencies seeder failed"\n\
+\n\
+echo "Seeding countries..."\n\
+php artisan db:seed --force --class=CountriesTableSeeder || echo "Warning: Countries seeder failed"\n\
+\n\
+# Verify critical data exists\n\
+echo "Verifying timezone data..."\n\
+php artisan tinker --execute="echo '\''Timezones in DB: '\'' . DB::table('\''timezones'\'')->count();" || true\n\
 \n\
 # Ensure app is not in maintenance mode\n\
 echo "Taking application out of maintenance mode..."\n\
