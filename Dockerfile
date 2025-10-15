@@ -107,23 +107,39 @@ php artisan up || echo "App was not in maintenance mode"\n\
 echo "Running database migrations..."\n\
 php artisan migrate --force || echo "Warning: Migrations failed or already run"\n\
 \n\
-# Run seeders - CRITICAL for foreign key constraints\n\
-echo "Seeding essential database tables..."\n\
-echo "Seeding timezones..."\n\
-php artisan db:seed --force --class=TimezonesTableSeeder || {\n\
-  echo "ERROR: Timezone seeder failed! Attempting direct insert..."\n\
-  php artisan tinker --execute="DB::table('\''timezones'\'')->insert(['\''id'\'' => 1, '\''name'\'' => '\''UTC'\'', '\''location'\'' => '\''UTC'\'']);" || true\n\
-}\n\
+# Insert critical timezone data directly using SQL\n\
+echo "Ensuring timezone data exists..."\n\
+php artisan tinker --execute="\n\
+  if (DB::table('\''timezones'\'')->count() === 0) {\n\
+    DB::table('\''timezones'\'')->insert([\n\
+      ['\''id'\'' => 1, '\''name'\'' => '\''UTC'\'', '\''location'\'' => '\''UTC'\'', '\''diff_from_gtm'\'' => '\''+00:00'\''],\n\
+      ['\''id'\'' => 2, '\''name'\'' => '\''America/New_York'\'', '\''location'\'' => '\''America/New_York'\'', '\''diff_from_gtm'\'' => '\''-05:00'\''],\n\
+      ['\''id'\'' => 30, '\''name'\'' => '\''Africa/Dar_es_Salaam'\'', '\''location'\'' => '\''Africa/Dar_es_Salaam'\'', '\''diff_from_gtm'\'' => '\''+03:00'\''],\n\
+    ]);\n\
+    echo '\''Timezones inserted successfully'\';\n\
+  } else {\n\
+    echo '\''Timezones already exist: '\'' . DB::table('\''timezones'\'')->count();\n\
+  }\n\
+" 2>/dev/null || echo "Timezone insert failed, trying alternative..."\n\
 \n\
-echo "Seeding currencies..."\n\
-php artisan db:seed --force --class=CurrenciesTableSeeder || echo "Warning: Currencies seeder failed"\n\
+# Fallback: Try inserting just one timezone if the above fails\n\
+php artisan tinker --execute="\n\
+  try {\n\
+    if (DB::table('\''timezones'\'')->where('\''id'\'', 1)->doesntExist()) {\n\
+      DB::table('\''timezones'\'')->insert(['\''id'\'' => 1, '\''name'\'' => '\''UTC'\'', '\''location'\'' => '\''UTC'\'']);\n\
+      echo '\''UTC timezone created'\';\n\
+    }\n\
+  } catch (Exception \$e) {\n\
+    echo '\''Timezone already exists or error: '\'' . \$e->getMessage();\n\
+  }\n\
+" 2>/dev/null || true\n\
 \n\
-echo "Seeding countries..."\n\
-php artisan db:seed --force --class=CountriesTableSeeder || echo "Warning: Countries seeder failed"\n\
-\n\
-# Verify critical data exists\n\
-echo "Verifying timezone data..."\n\
-php artisan tinker --execute="echo '\''Timezones in DB: '\'' . DB::table('\''timezones'\'')->count();" || true\n\
+# Insert currency data\n\
+echo "Ensuring currency data exists..."\n\
+php artisan tinker --execute="\n\
+  if (DB::table('\''currencies'\'')->count() === 0) {\n\
+    DB::table('\''currencies'\'')->insert([\n\
+      ['\''id'\'' => 1, '\''code'\'' => '\''USD'\'', '\''symbol'\'' => '\''\n\
 \n\
 # Ensure app is not in maintenance mode\n\
 echo "Taking application out of maintenance mode..."\n\
