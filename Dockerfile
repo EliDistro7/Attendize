@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     libxrender1 \
     libgmp-dev \
     supervisor \
+    default-mysql-client \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip gmp \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

@@ -26,6 +26,20 @@ fi
 echo "Taking application out of maintenance mode..."
 php artisan up || echo "App was not in maintenance mode"
 
+# Disable sql_require_primary_key for legacy migrations
+echo "Configuring database settings..."
+php artisan tinker --execute="
+  try {
+    DB::statement('SET GLOBAL sql_require_primary_key = 0');
+    echo 'Primary key requirement disabled';
+  } catch (Exception \$e) {
+    echo 'Could not modify sql_require_primary_key (might not be needed): ' . \$e->getMessage();
+  }
+" 2>/dev/null || echo "Note: sql_require_primary_key setting skipped"
+
+# Also try via direct MySQL connection if available
+mysql -h\${DB_HOST:-db} -u\${DB_USERNAME:-root} -p\${DB_PASSWORD} -e "SET GLOBAL sql_require_primary_key = 0;" 2>/dev/null || true
+
 # Run migrations
 echo "Running database migrations..."
 php artisan migrate --force || echo "Warning: Migrations failed or already run"

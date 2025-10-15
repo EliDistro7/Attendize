@@ -25,9 +25,12 @@ services:
     volumes:
       - .:/usr/share/nginx/html
       - .:/var/www
+    env_file:
+      - ./.env
   db:
     image: mysql:5.7.23
     restart: always
+    command: --sql_mode="NO_ENGINE_SUBSTITUTION"
     env_file:
       - ./.env
     environment:
