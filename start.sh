@@ -76,9 +76,32 @@ echo "Ensuring currency data exists..."
 php artisan tinker --execute="
   if (DB::table('currencies')->count() === 0) {
     DB::table('currencies')->insert([
-      ['id' => 1, 'code' => 'USD', 'symbol' => '\$', 'name' => 'US Dollar'],
-      ['id' => 2, 'code' => 'EUR', 'symbol' => '€', 'name' => 'Euro'],
-      ['id' => 3, 'code' => 'GBP', 'symbol' => '£', 'name' => 'British Pound'],
+      ['id' => 1, 'code' => 'USD', 'symbol' => '\
+
+# Clear all caches first to prevent stale config issues
+echo "Clearing caches..."
+php artisan config:clear 2>/dev/null || true
+php artisan route:clear 2>/dev/null || true
+php artisan view:clear 2>/dev/null || true
+php artisan cache:clear 2>/dev/null || true
+
+# Run Laravel optimization with runtime environment
+echo "Optimizing Laravel..."
+php artisan config:cache || echo "Warning: Config cache failed"
+php artisan route:cache || echo "Warning: Route cache failed"
+php artisan view:cache || echo "Warning: View cache failed"
+
+echo "Application initialization complete!"
+
+# Start services
+echo "Starting PHP-FPM..."
+php-fpm -D
+
+echo "Starting Nginx..."
+nginx -g "daemon off;"
+],
+      ['id' => 2, 'code' => 'EUR', 'symbol' => '€'],
+      ['id' => 3, 'code' => 'GBP', 'symbol' => '£'],
     ]);
     echo 'Currencies inserted successfully';
   } else {
