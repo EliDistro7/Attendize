@@ -44,59 +44,32 @@ mysql -h\${DB_HOST:-db} -u\${DB_USERNAME:-root} -p\${DB_PASSWORD} -e "SET GLOBAL
 echo "Running database migrations..."
 php artisan migrate --force || echo "Warning: Migrations failed or already run"
 
-# Insert critical timezone data - ensure ID 1 exists for foreign key
+# Insert critical timezone data directly using SQL
 echo "Ensuring timezone data exists..."
 php artisan tinker --execute="
-  // Check schema first
-  \$columns = Schema::getColumnListing('timezones');
-  echo 'Timezone columns: ' . implode(', ', \$columns) . PHP_EOL;
-  
-  // Try to get existing timezone with id=1
-  \$tz1 = DB::table('timezones')->where('id', 1)->first();
-  
-  if (!\$tz1) {
-    echo 'Creating timezone with id=1...' . PHP_EOL;
-    try {
-      // Insert only the columns that exist
-      \$data = ['id' => 1];
-      
-      if (in_array('name', \$columns)) \$data['name'] = 'UTC';
-      if (in_array('location', \$columns)) \$data['location'] = 'UTC';
-      if (in_array('diff_from_gtm', \$columns)) \$data['diff_from_gtm'] = '+00:00';
-      if (in_array('diff_from_gmt', \$columns)) \$data['diff_from_gmt'] = '+00:00';
-      
-      DB::table('timezones')->insert(\$data);
-      echo 'Timezone id=1 created successfully' . PHP_EOL;
-    } catch (Exception \$e) {
-      echo 'Error creating timezone: ' . \$e->getMessage() . PHP_EOL;
-    }
+  if (DB::table('timezones')->count() === 0) {
+    DB::table('timezones')->insert([
+      ['id' => 1, 'name' => 'UTC', 'location' => 'UTC', 'diff_from_gtm' => '+00:00'],
+      ['id' => 2, 'name' => 'America/New_York', 'location' => 'America/New_York', 'diff_from_gtm' => '-05:00'],
+      ['id' => 30, 'name' => 'Africa/Dar_es_Salaam', 'location' => 'Africa/Dar_es_Salaam', 'diff_from_gtm' => '+03:00'],
+    ]);
+    echo 'Timezones inserted successfully';
   } else {
-    echo 'Timezone id=1 already exists' . PHP_EOL;
+    echo 'Timezones already exist: ' . DB::table('timezones')->count();
   }
-  
-  // Also create id=2 and id=30 if they don't exist
-  if (!DB::table('timezones')->where('id', 2)->exists()) {
-    \$data = ['id' => 2];
-    if (in_array('name', \$columns)) \$data['name'] = 'America/New_York';
-    if (in_array('location', \$columns)) \$data['location'] = 'America/New_York';
-    if (in_array('diff_from_gtm', \$columns)) \$data['diff_from_gtm'] = '-05:00';
-    if (in_array('diff_from_gmt', \$columns)) \$data['diff_from_gmt'] = '-05:00';
-    DB::table('timezones')->insert(\$data);
-    echo 'Timezone id=2 created' . PHP_EOL;
+" 2>/dev/null || echo "Timezone insert failed, trying alternative..."
+
+# Fallback: Try inserting just one timezone if the above fails
+php artisan tinker --execute="
+  try {
+    if (DB::table('timezones')->where('id', 1)->doesntExist()) {
+      DB::table('timezones')->insert(['id' => 1, 'name' => 'UTC', 'location' => 'UTC']);
+      echo 'UTC timezone created';
+    }
+  } catch (Exception \$e) {
+    echo 'Timezone already exists or error: ' . \$e->getMessage();
   }
-  
-  if (!DB::table('timezones')->where('id', 30)->exists()) {
-    \$data = ['id' => 30];
-    if (in_array('name', \$columns)) \$data['name'] = 'Africa/Dar_es_Salaam';
-    if (in_array('location', \$columns)) \$data['location'] = 'Africa/Dar_es_Salaam';
-    if (in_array('diff_from_gtm', \$columns)) \$data['diff_from_gtm'] = '+03:00';
-    if (in_array('diff_from_gmt', \$columns)) \$data['diff_from_gmt'] = '+03:00';
-    DB::table('timezones')->insert(\$data);
-    echo 'Timezone id=30 created' . PHP_EOL;
-  }
-  
-  echo 'Total timezones: ' . DB::table('timezones')->count() . PHP_EOL;
-" 2>/dev/null || echo "Warning: Could not ensure timezone data"
+" 2>/dev/null || true
 
 # Insert currency data
 echo "Ensuring currency data exists..."
