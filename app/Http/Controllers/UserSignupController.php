@@ -43,78 +43,87 @@ class UserSignupController extends Controller
         return view('Public.LoginAndRegister.Signup', compact('is_attendize'));
     }
 
-    /**
-     * Creates an account.
-     *
-     * @param Request $request
-     *
-     * @return Redirect
-     */
-    public function postSignup(Request $request)
-    {
-        $is_attendize = Utils::isAttendizeCloud();
-        $this->validate($request, [
-            'email'        => 'required|email|unique:users',
-            'password'     => 'required|min:8|confirmed',
-            'first_name'   => 'required',
-            'last_name'   => 'required',
-            'terms_agreed' => $is_attendize ? 'required' : ''
-        ]);
+ /**
+ * Creates an account.
+ *
+ * @param Request $request
+ *
+ * @return Redirect
+ */
+public function postSignup(Request $request)
+{
+    $is_attendize = Utils::isAttendizeCloud();
+    $this->validate($request, [
+        'email'        => 'required|email|unique:users',
+        'password'     => 'required|min:8|confirmed',
+        'first_name'   => 'required',
+        'last_name'   => 'required',
+        'terms_agreed' => $is_attendize ? 'required' : ''
+    ]);
 
-        if (is_object($this->captchaService)) {
-            if (!$this->captchaService->isHuman($request)) {
-                return Redirect::back()
-                    ->with(['message' => trans("Controllers.incorrect_captcha"), 'failed' => true])
-                    ->withInput();
-            }
+    if (is_object($this->captchaService)) {
+        if (!$this->captchaService->isHuman($request)) {
+            return Redirect::back()
+                ->with(['message' => trans("Controllers.incorrect_captcha"), 'failed' => true])
+                ->withInput();
         }
-
-        $account_data = $request->only(['email', 'first_name', 'last_name']);
-        $account_data['currency_id'] = config('attendize.default_currency', 2);
-        
-        // ✅ FIX: Get default timezone with fallback to first available timezone
-        $defaultTimezoneId = config('attendize.default_timezone', 1);
-        
-        // Verify the timezone exists in database, if not use the first available one
-        $timezoneExists = Timezone::where('id', $defaultTimezoneId)->exists();
-        if (!$timezoneExists) {
-            $firstTimezone = Timezone::first();
-            $defaultTimezoneId = $firstTimezone ? $firstTimezone->id : 1;
-            \Log::warning("Default timezone ID from config doesn't exist. Using timezone ID: {$defaultTimezoneId}");
-        }
-        
-        $account_data['timezone_id'] = $defaultTimezoneId;
-        $account = Account::create($account_data);
-
-        $user = new User();
-        $user_data = $request->only(['email', 'first_name', 'last_name']);
-        $user_data['password'] = Hash::make($request->get('password'));
-        $user_data['account_id'] = $account->id;
-        $user_data['is_parent'] = 1;
-        $user_data['is_registered'] = 1;
-        $user = User::create($user_data);
-
-        $payment_gateway_data = [
-            'payment_gateway_id' => PaymentGateway::getDefaultPaymentGatewayId(),
-            'account_id' => $account->id,
-            'config' => '{"apiKey":"","publishableKey":""}',
-        ];
-        $paymentGateway = AccountPaymentGateway::create($payment_gateway_data);
-
-        if ($is_attendize) {
-            // TODO: Do this async?
-            Mail::send(Lang::locale().'.Emails.ConfirmEmail',
-                ['first_name' => $user->first_name, 'confirmation_code' => $user->confirmation_code],
-                function ($message) use ($request) {
-                    $message->to($request->get('email'), $request->get('first_name'))
-                        ->subject(trans("Email.attendize_register"));
-                });
-        }
-
-        session()->flash('message', 'Success! You can now login.');
-
-        return redirect('login');
     }
+
+    $account_data = $request->only(['email', 'first_name', 'last_name']);
+    $account_data['currency_id'] = config('attendize.default_currency', 2);
+    
+    // ✅ FIX: Get default timezone with fallback to first available timezone
+    $defaultTimezoneId = config('attendize.default_timezone', 1);
+    
+    // Verify the timezone exists in database, if not use the first available one
+    $timezone = Timezone::where('id', $defaultTimezoneId)->first();
+    
+    if (!$timezone) {
+        $timezone = Timezone::first();
+        
+        if (!$timezone) {
+            // Critical error: no timezones in database at all
+            \Log::error("No timezones found in database during signup");
+            return Redirect::back()
+                ->with(['message' => 'System configuration error. Please contact support.', 'failed' => true])
+                ->withInput();
+        }
+        
+        \Log::warning("Default timezone ID {$defaultTimezoneId} doesn't exist. Using timezone ID: {$timezone->id}");
+    }
+    
+    $account_data['timezone_id'] = $timezone->id;
+    $account = Account::create($account_data);
+
+    $user = new User();
+    $user_data = $request->only(['email', 'first_name', 'last_name']);
+    $user_data['password'] = Hash::make($request->get('password'));
+    $user_data['account_id'] = $account->id;
+    $user_data['is_parent'] = 1;
+    $user_data['is_registered'] = 1;
+    $user = User::create($user_data);
+
+    $payment_gateway_data = [
+        'payment_gateway_id' => PaymentGateway::getDefaultPaymentGatewayId(),
+        'account_id' => $account->id,
+        'config' => '{"apiKey":"","publishableKey":""}',
+    ];
+    $paymentGateway = AccountPaymentGateway::create($payment_gateway_data);
+
+    if ($is_attendize) {
+        // TODO: Do this async?
+        Mail::send(Lang::locale().'.Emails.ConfirmEmail',
+            ['first_name' => $user->first_name, 'confirmation_code' => $user->confirmation_code],
+            function ($message) use ($request) {
+                $message->to($request->get('email'), $request->get('first_name'))
+                    ->subject(trans("Email.attendize_register"));
+            });
+    }
+
+    session()->flash('message', 'Success! You can now login.');
+
+    return redirect('login');
+}
 
     /**
      * Confirm a user email
