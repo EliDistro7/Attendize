@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class SetupCountriesTable extends Migration
 {
@@ -12,9 +14,8 @@ class SetupCountriesTable extends Migration
     public function up()
     {
         // Creates the countries table
-        Schema::create('countries', function ($table) {
-            $table->integer('id');
-            $table->primary('id');  // PRIMARY KEY must be on a separate line
+        Schema::create('countries', function (Blueprint $table) {
+            $table->integer('id')->primary();  // PRIMARY KEY on same line
             
             $table->string('capital', 255)->nullable();
             $table->string('citizenship', 255)->nullable();
