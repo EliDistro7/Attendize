@@ -33,12 +33,9 @@ php artisan tinker --execute="
     DB::statement('SET GLOBAL sql_require_primary_key = 0');
     echo 'Primary key requirement disabled';
   } catch (Exception \$e) {
-    echo 'Could not modify sql_require_primary_key (might not be needed): ' . \$e->getMessage();
+    echo 'Could not modify sql_require_primary_key: ' . \$e->getMessage();
   }
 " 2>/dev/null || echo "Note: sql_require_primary_key setting skipped"
-
-# Also try via direct MySQL connection if available
-mysql -h\${DB_HOST:-db} -u\${DB_USERNAME:-root} -p\${DB_PASSWORD} -e "SET GLOBAL sql_require_primary_key = 0;" 2>/dev/null || true
 
 # Run migrations
 echo "Running database migrations..."
@@ -55,57 +52,22 @@ php artisan tinker --execute="
     ]);
     echo 'Timezones inserted successfully';
   } else {
-    echo 'Timezones already exist: ' . DB::table('timezones')->count();
+    echo 'Timezones already exist';
   }
-" 2>/dev/null || echo "Timezone insert failed, trying alternative..."
+" 2>/dev/null || echo "Timezone insert failed"
 
-# Fallback: Try inserting just one timezone if the above fails
-php artisan tinker --execute="
-  try {
-    if (DB::table('timezones')->where('id', 1)->doesntExist()) {
-      DB::table('timezones')->insert(['id' => 1, 'name' => 'UTC', 'location' => 'UTC']);
-      echo 'UTC timezone created';
-    }
-  } catch (Exception \$e) {
-    echo 'Timezone already exists or error: ' . \$e->getMessage();
-  }
-" 2>/dev/null || true
-
-# Insert currency data
+# Insert currency data - FIXED VERSION
 echo "Ensuring currency data exists..."
 php artisan tinker --execute="
   if (DB::table('currencies')->count() === 0) {
     DB::table('currencies')->insert([
-      ['id' => 1, 'code' => 'USD', 'symbol' => '\
-
-# Clear all caches first to prevent stale config issues
-echo "Clearing caches..."
-php artisan config:clear 2>/dev/null || true
-php artisan route:clear 2>/dev/null || true
-php artisan view:clear 2>/dev/null || true
-php artisan cache:clear 2>/dev/null || true
-
-# Run Laravel optimization with runtime environment
-echo "Optimizing Laravel..."
-php artisan config:cache || echo "Warning: Config cache failed"
-php artisan route:cache || echo "Warning: Route cache failed"
-php artisan view:cache || echo "Warning: View cache failed"
-
-echo "Application initialization complete!"
-
-# Start services
-echo "Starting PHP-FPM..."
-php-fpm -D
-
-echo "Starting Nginx..."
-nginx -g "daemon off;"
-],
-      ['id' => 2, 'code' => 'EUR', 'symbol' => '€'],
-      ['id' => 3, 'code' => 'GBP', 'symbol' => '£'],
+      ['id' => 1, 'code' => 'USD', 'symbol' => '\$', 'title' => 'US Dollar'],
+      ['id' => 2, 'code' => 'EUR', 'symbol' => '€', 'title' => 'Euro'],
+      ['id' => 3, 'code' => 'GBP', 'symbol' => '£', 'title' => 'Pound Sterling'],
     ]);
     echo 'Currencies inserted successfully';
   } else {
-    echo 'Currencies already exist: ' . DB::table('currencies')->count();
+    echo 'Currencies already exist';
   }
 " 2>/dev/null || true
 
