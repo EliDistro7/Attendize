@@ -205,89 +205,50 @@
                 statusMessage.innerHTML = '<i class="fa fa-exclamation-triangle"></i> Unable to check status. Please try again or refresh the page.';
             });
         }
-
-        function updateStatusDisplay(data) {
-            const statusMessage = document.getElementById('status-message');
-            const statusIndicator = document.querySelector('.status-indicator');
-            
-            console.log('Updating display with status:', data.status);
-            
-            if (data.status === 'completed') {
-                statusIndicator.className = 'status-indicator success';
-                statusIndicator.innerHTML = '<i class="fa fa-check-circle fa-3x"></i>';
-                
-                statusMessage.className = 'alert alert-success';
-                
-                statusMessage.innerHTML = '<i class="fa fa-check"></i> Payment successful! Redirecting to order confirmation...';
-                
-                // Clear the interval
-                if (statusCheckInterval) {
-                    clearInterval(statusCheckInterval);
-                }
-                
-                setTimeout(() => {
-                    // Use the redirect URL from the API response if available
-                    if (data.redirect_url) {
-                        console.log('inside redirecting to:', data.redirectUrl);
-                        window.location.href = data.redirect_url;
-                    } else {
-                        // Fallback redirect
-                        window.location.href = `/e/{{$event->id}}/checkout/success`;
-                    }
-                }, 2000);
-                
-            } else if (data.status === 'failed') {
-                statusIndicator.className = 'status-indicator failed';
-                statusIndicator.innerHTML = '<i class="fa fa-times-circle fa-3x"></i>';
-                
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerHTML = '<i class="fa fa-times"></i> Payment failed: ' + (data.message || 'Please try again');
-                
-                // Stop checking
-                if (statusCheckInterval) {
-                    clearInterval(statusCheckInterval);
-                }
-                
-                // Show retry button after 3 seconds
-                setTimeout(() => {
-                    statusMessage.innerHTML += '<br><br><a href="/e/{{$event->id}}/checkout/payment" class="btn btn-primary">Try Again</a>';
-                }, 3000);
-                
-            } else if (data.status === 'timeout') {
-                statusIndicator.className = 'status-indicator failed';
-                statusIndicator.innerHTML = '<i class="fa fa-clock-o fa-3x"></i>';
-                
-                statusMessage.className = 'alert alert-warning';
-                statusMessage.innerHTML = '<i class="fa fa-clock-o"></i> Payment timed out. Please try again.';
-                
-                // Stop checking
-                if (statusCheckInterval) {
-                    clearInterval(statusCheckInterval);
-                }
-                
-                // Show retry button
-                setTimeout(() => {
-                    statusMessage.innerHTML += '<br><br><a href="/e/{{$event->id}}/checkout/payment" class="btn btn-primary">Start Over</a>';
-                }, 2000);
-                
-            } else if (data.status === 'error') {
-                statusIndicator.className = 'status-indicator failed';
-                statusIndicator.innerHTML = '<i class="fa fa-exclamation-triangle fa-3x"></i>';
-                
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerHTML = '<i class="fa fa-exclamation-triangle"></i> ' + (data.message || 'An error occurred. Please contact support.');
-                
-                // Stop checking
-                if (statusCheckInterval) {
-                    clearInterval(statusCheckInterval);
-                }
-                
-            } else {
-                // Still processing
-                statusMessage.className = 'alert alert-info';
-                statusMessage.innerHTML = '<i class="fa fa-spinner fa-spin"></i> ' + (data.message || 'Payment is still being processed...');
-            }
+function updateStatusDisplay(data) {
+    const statusMessage = document.getElementById('status-message');
+    const statusIndicator = document.querySelector('.status-indicator');
+    
+    console.log('Full API response:', data);
+    console.log('Status:', data.status);
+    console.log('Redirect URL:', data.redirect_url);
+    
+    if (data.status === 'completed') {
+        statusIndicator.className = 'status-indicator success';
+        statusIndicator.innerHTML = '<i class="fa fa-check-circle fa-3x"></i>';
+        
+        statusMessage.className = 'alert alert-success';
+        statusMessage.innerHTML = '<i class="fa fa-check"></i> Payment successful! Redirecting to order confirmation...';
+        
+        // Clear the interval
+        if (statusCheckInterval) {
+            clearInterval(statusCheckInterval);
         }
+        
+        setTimeout(() => {
+            // Check if redirect_url exists
+            if (data.redirect_url) {
+                console.log('Redirecting to:', data.redirect_url);
+                window.location.href = data.redirect_url;
+            } else {
+                console.error('No redirect_url in response:', data);
+                statusMessage.className = 'alert alert-warning';
+                
+                // Try to build fallback URL using order_reference if available
+                if (data.order_reference) {
+                    const fallbackUrl = `/order/${data.order_reference}`;
+                    console.log('Using fallback URL:', fallbackUrl);
+                    window.location.href = fallbackUrl;
+                } else {
+                    statusMessage.innerHTML = 'Order completed, but redirect failed. <a href="/order">View your orders</a>';
+                }
+            }
+        }, 5000);
+        
+    } else if (data.status === 'failed') {
+        // ... rest of your code
+    }
+}
 
         // Auto-check status every 6 seconds
         document.addEventListener('DOMContentLoaded', function() {

@@ -19,6 +19,13 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 /*
  * ---------------
+ * Mobile Payment Status
+ * ---------------
+ */
+Route::get('mobile-payment-status/{transaction_id}', 'Api\MobilePaymentController@checkStatus');
+
+/*
+ * ---------------
  * Organisers
  * ---------------
  */

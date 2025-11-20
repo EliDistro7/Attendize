@@ -137,6 +137,34 @@ Route::group(
 
     });
 
+
+    
+
+
+// Add these routes to your routes/web.php file
+
+/*
+|--------------------------------------------------------------------------
+| Mobile Payment Routes
+|--------------------------------------------------------------------------
+*/
+
+// Mobile payment initiation (called from checkout payment form)
+Route::post('/e/{event_id}/checkout/create-mobile', 
+    [App\Http\Controllers\MobilePaymentController::class, 'initiate']
+)->name('mobile.payment.initiate');
+
+// Mobile payment status page (shows the waiting/processing UI)
+Route::get('/e/{event_id}/payment/status/{transaction_id}', 
+    [App\Http\Controllers\MobilePaymentController::class, 'showStatus']
+)->name('showMobilePaymentStatus');
+
+// Mobile payment status check API (AJAX endpoint for polling)
+Route::get('/api/mobile-payment-status/{transaction_id}', 
+    [App\Http\Controllers\MobilePaymentController::class, 'checkStatus']
+)->name('mobile.payment.status.check');
+
+
     /*
      * Public event page routes
      */
@@ -188,24 +216,21 @@ Route::group(
             [EventCheckoutController::class, 'showEventCheckout']
         )->name('showEventCheckout');
 
-        Route::get('{event_id}/checkout/success',
-            [EventCheckoutController::class, 'showEventCheckoutPaymentReturn']
-        )->name('showEventCheckoutPaymentReturn');
+      
 
         Route::post('{event_id}/checkout/create',
             [EventCheckoutController::class, 'postCreateOrderMobile']
         )->name('postCreateOrderMobile');
 
-        // Mobile payment status routes
-        Route::get('{event_id}/payment/status/{transaction_id}', 
-            [EventCheckoutController::class, 'showMobilePaymentStatus']
-        )->name('showMobilePaymentStatus');
+    
     });
 
-    // API route for mobile payment status check
-    Route::get('api/mobile-payment-status/{transaction_id}', 
-        [EventCheckoutController::class, 'getMobilePaymentStatus']
-    )->name('getMobilePaymentStatus');
+      Route::get('{event_id}/checkout/success',
+            [EventCheckoutController::class, 'showEventCheckoutPaymentReturn']
+        )->name('showEventCheckoutPaymentReturn');
+
+        Route::get('/order-details/{order_reference}', 'OrderController@showOrderDetails')
+    ->name('showOrderDetails');
     
     Route::get('/terms-and-conditions', function () {
     return view('termsAndConditions');

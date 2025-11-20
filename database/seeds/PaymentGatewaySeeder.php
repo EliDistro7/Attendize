@@ -62,6 +62,7 @@ class PaymentGatewaySeeder extends Seeder
                     'checkout_blade_template' => 'Public.ViewEvent.Partials.PaymentStripeSCA'
                 ]
             );
+            
         }
 
         // Tanzania Mobile Money Gateways
