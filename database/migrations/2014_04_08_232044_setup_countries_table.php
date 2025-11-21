@@ -15,7 +15,7 @@ class SetupCountriesTable extends Migration
     {
         // Creates the countries table
         Schema::create('countries', function (Blueprint $table) {
-            $table->integer('id')->primary();  // PRIMARY KEY on same line
+            $table->id();
             
             $table->string('capital', 255)->nullable();
             $table->string('citizenship', 255)->nullable();
