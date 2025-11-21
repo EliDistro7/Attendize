@@ -145,8 +145,21 @@
 <!--/Main Content-->
 
 <!--JS-->
+<!--JS-->
 @include("Shared.Partials.LangScript")
+
+{{-- Define Attendize configuration BEFORE backend.js --}}
+<script>
+    window.Attendize = {
+        DateTimeFormat: "{{ config('attendize.date_format', 'dd-MM-yyyy HH:mm') }}",
+        DateSeparator: "{{ config('attendize.date_separator', '-') }}",
+        GenericErrorMessages: '@lang("Basic.generic_error")',
+        version: "{{ config('attendize.version') }}"
+    };
+</script>
+
 {!! Html::script('assets/javascript/backend.js') !!}
+
 <script>
     $(function () {
         $.ajaxSetup({
@@ -161,12 +174,10 @@
         $('.editUserModal').click();
     }, 1000);
     @endif
-
 </script>
 <!--/JS-->
 @yield('foot')
 
 @include('Shared.Partials.GlobalFooterJS')
-
 </body>
 </html>
