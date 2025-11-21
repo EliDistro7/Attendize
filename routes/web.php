@@ -232,9 +232,9 @@ Route::get('/api/mobile-payment-status/{transaction_id}',
         Route::get('/order-details/{order_reference}', 'OrderController@showOrderDetails')
     ->name('showOrderDetails');
     
-    Route::get('/terms-and-conditions', function () {
-    return view('termsAndConditions');
-})->name('termsAndConditions');
+    Route::get('/terms-and-conditions',
+    [App\Http\Controllers\TermsController::class, 'show']
+)->name('termsAndConditions');
 
     /*
      * Public view order routes
