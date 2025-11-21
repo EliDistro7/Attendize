@@ -16,6 +16,16 @@
         @show
     </title>
 
+    {{-- ✅ DEFINE ATTENDIZE FIRST - Before any other JavaScript --}}
+    <script>
+        window.Attendize = {
+            DateTimeFormat: "{{ config('attendize.date_format', 'dd-MM-yyyy HH:mm') }}",
+            DateSeparator: "{{ config('attendize.date_separator', '-') }}",
+            GenericErrorMessages: "@lang('Basic.generic_error')",
+            version: "{{ config('attendize.version') }}"
+        };
+    </script>
+
     @include('Shared.Layouts.ViewJavascript')
 
     <!--Meta-->
@@ -68,18 +78,6 @@
                             @lang("Top.create_organiser")
                         </a>
                     </li>
-
-                    {{-- DEBUG: Add this temporarily --}}
-                    @php
-                        \Log::info('=== MASTER BLADE DEBUG ===');
-                        \Log::info('Auth check: ' . (Auth::check() ? 'YES' : 'NO'));
-                        \Log::info('Auth user: ' . (Auth::check() ? Auth::user()->email : 'NONE'));
-                        \Log::info('Organisers variable isset: ' . (isset($organisers) ? 'YES' : 'NO'));
-                        if (isset($organisers)) {
-                            \Log::info('Organisers count: ' . $organisers->count());
-                        }
-                        \Log::info('All view variables: ' . implode(', ', array_keys(get_defined_vars())));
-                    @endphp
 
                     @if(isset($organisers))
                         @foreach($organisers as $org)
@@ -145,18 +143,12 @@
 <!--/Main Content-->
 
 <!--JS-->
-<!--JS-->
 @include("Shared.Partials.LangScript")
 
-{{-- Define Attendize configuration BEFORE backend.js --}}
-<script>
-    window.Attendize = {
-        DateTimeFormat: "{{ config('attendize.date_format', 'dd-MM-yyyy HH:mm') }}",
-        DateSeparator: "{{ config('attendize.date_separator', '-') }}",
-        GenericErrorMessages: '@lang("Basic.generic_error")',
-        version: "{{ config('attendize.version') }}"
-    };
-</script>
+{{-- ❌ REMOVE THIS - Already defined in <head> --}}
+{{-- <script>
+    window.Attendize = { ... };
+</script> --}}
 
 {!! Html::script('assets/javascript/backend.js') !!}
 
