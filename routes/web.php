@@ -243,9 +243,7 @@ Route::get('/api/mobile-payment-status/{transaction_id}',
         [EventCheckoutController::class, 'showOrderDetails']
     )->name('showOrderDetails');
 
-    Route::get('order/{order_reference}/tickets',
-        [EventCheckoutController::class, 'showOrderTickets']
-    )->name('showOrderTickets');
+  
 
     /*
      * Backend routes
