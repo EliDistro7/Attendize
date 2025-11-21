@@ -11,6 +11,12 @@ class TicketStatusSeeder extends Seeder
      */
     public function run()
     {
+
+         // Skip if question types already exist
+        if (DB::table('ticket_statuses')->count() > 0) {
+            $this->command->info('Question types already exist, skipping...');
+            return;
+        }
         $ticket_statuses = [
             [
                 'id' => 1,

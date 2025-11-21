@@ -11,6 +11,11 @@ class TimezoneSeeder extends Seeder
      */
     public function run()
     {
+         // Skip if question types already exist
+        if (DB::table('timezones')->count() > 0) {
+            $this->command->info('Question types already exist, skipping...');
+            return;
+        }
         $timezones = [
             ['id' => 1, 'name' => 'Pacific/Midway', 'location' => '(GMT-11:00) Midway Island'],
             ['id' => 2, 'name' => 'US/Samoa', 'location' => '(GMT-11:00) Samoa'],

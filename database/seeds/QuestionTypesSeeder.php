@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class QuestionTypesSeeder extends Seeder
 {
@@ -12,6 +13,12 @@ class QuestionTypesSeeder extends Seeder
      */
     public function run()
     {
+        // Skip if question types already exist
+        if (DB::table('question_types')->count() > 0) {
+            $this->command->info('Question types already exist, skipping...');
+            return;
+        }
+
         DB::table('question_types')->insert([
             [
                 'id' => 1,

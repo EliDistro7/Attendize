@@ -3,6 +3,7 @@
 use App\Models\Currency;
 use Illuminate\Database\Seeder;
 
+
 class CurrencySeeder extends Seeder
 {
     /**
@@ -10,6 +11,11 @@ class CurrencySeeder extends Seeder
      */
     public function run()
     {
+        // Only seed if table is empty
+    if (Currency::count() > 0) {
+        $this->command->info('Currencies already exist, skipping...');
+        return;
+    };
         $currencies = [
             [
                 'id' => 1,

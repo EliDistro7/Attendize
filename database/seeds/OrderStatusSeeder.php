@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class OrderStatusSeeder extends Seeder
 {
@@ -11,6 +12,12 @@ class OrderStatusSeeder extends Seeder
      */
     public function run()
     {
+        // Skip if order statuses already exist
+        if (DB::table('order_statuses')->count() > 0) {
+            $this->command->info('Order statuses already exist, skipping...');
+            return;
+        }
+        
         $order_statuses = [
             [
                 'id' => 1,
