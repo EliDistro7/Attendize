@@ -10,6 +10,7 @@ use App\Models\Event;
 use App\Models\Organiser;
 use App\Models\EventImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Spatie\GoogleCalendar\Event as GCEvent;
 use Carbon\Carbon;
 
@@ -166,28 +167,35 @@ class EventController extends MyBaseController
         ]);
     }
 
+    // ✅ FIXED: Use storage instead of public directory
     if ($processedRequest->hasFile('event_image')) {
-        $path = public_path() . '/' . config('attendize.event_images_path');
         $filename = 'event_image-' . md5(time() . $event->id) . '.' . strtolower($processedRequest->file('event_image')->getClientOriginalExtension());
+        
+        // Store in storage/app/public/event_images
+        $storagePath = 'event_images/' . $filename;
+        $processedRequest->file('event_image')->storeAs('event_images', $filename, 'public');
+        
+        // Get full path for image manipulation
+        $file_full_path = storage_path('app/public/' . $storagePath);
 
-        $file_full_path = $path . '/' . $filename;
+        try {
+            $img = Image::make($file_full_path);
+            $img->resize(800, null, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+            $img->save($file_full_path);
+        } catch (\Exception $e) {
+            Log::warning('Image resize failed: ' . $e->getMessage());
+        }
 
-        $processedRequest->file('event_image')->move($path, $filename);
-
-        $img = Image::make($file_full_path);
-
-        $img->resize(800, null, function ($constraint) {
-            $constraint->aspectRatio();
-            $constraint->upsize();
-        });
-
-        $img->save($file_full_path);
-
-        /* Upload to s3 */
-        \Storage::put(config('attendize.event_images_path') . '/' . $filename, file_get_contents($file_full_path));
+        // Also upload to configured storage (S3, etc.) if needed
+        if (config('filesystems.default') !== 'public') {
+            Storage::put(config('attendize.event_images_path') . '/' . $filename, file_get_contents($file_full_path));
+        }
 
         $eventImage = EventImage::createNew();
-        $eventImage->image_path = config('attendize.event_images_path') . '/' . $filename;
+        $eventImage->image_path = $storagePath;
         $eventImage->event_id = $event->id;
         $eventImage->save();
     }
@@ -271,6 +279,7 @@ private function formatDateForValidation($dateString)
         return $dateString;
     }
 }
+
     /**
      * Edit an event
      *
@@ -344,29 +353,37 @@ private function formatDateForValidation($dateString)
 
         $event->save();
 
+        // ✅ FIXED: Use storage instead of public directory
         if ($request->hasFile('event_image')) {
-            $path = public_path() . '/' . config('attendize.event_images_path');
             $filename = 'event_image-' . md5(time() . $event->id) . '.' . strtolower($request->file('event_image')->getClientOriginalExtension());
+            
+            // Store in storage/app/public/event_images
+            $storagePath = 'event_images/' . $filename;
+            $request->file('event_image')->storeAs('event_images', $filename, 'public');
+            
+            // Get full path for image manipulation
+            $file_full_path = storage_path('app/public/' . $storagePath);
 
-            $file_full_path = $path . '/' . $filename;
+            try {
+                $img = Image::make($file_full_path);
+                $img->resize(800, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+                $img->save($file_full_path);
+            } catch (\Exception $e) {
+                Log::warning('Image resize failed: ' . $e->getMessage());
+            }
 
-            $request->file('event_image')->move($path, $filename);
-
-            $img = Image::make($file_full_path);
-
-            $img->resize(800, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-
-            $img->save($file_full_path);
-
-            \Storage::put(config('attendize.event_images_path') . '/' . $filename, file_get_contents($file_full_path));
+            // Also upload to configured storage (S3, etc.) if needed
+            if (config('filesystems.default') !== 'public') {
+                Storage::put(config('attendize.event_images_path') . '/' . $filename, file_get_contents($file_full_path));
+            }
 
             EventImage::where('event_id', '=', $event->id)->delete();
 
             $eventImage = EventImage::createNew();
-            $eventImage->image_path = config('attendize.event_images_path') . '/' . $filename;
+            $eventImage->image_path = $storagePath;
             $eventImage->event_id = $event->id;
             $eventImage->save();
         }
@@ -387,31 +404,42 @@ private function formatDateForValidation($dateString)
      */
     public function postUploadEventImage(Request $request)
     {
+        // ✅ FIXED: Use storage instead of public directory
         if ($request->hasFile('event_image')) {
-            $the_file = \File::get($request->file('event_image')->getRealPath());
             $file_name = 'event_details_image-' . md5(microtime()) . '.' . strtolower($request->file('event_image')->getClientOriginalExtension());
+            
+            // Store in storage/app/public/event_images
+            $storagePath = 'event_images/' . $file_name;
+            $request->file('event_image')->storeAs('event_images', $file_name, 'public');
+            
+            // Get full path for image manipulation
+            $full_path_to_file = storage_path('app/public/' . $storagePath);
 
-            $relative_path_to_file = config('attendize.event_images_path') . '/' . $file_name;
-            $full_path_to_file = public_path() . '/' . $relative_path_to_file;
+            try {
+                $img = Image::make($full_path_to_file);
+                $img->resize(1000, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+                $img->save($full_path_to_file);
+            } catch (\Exception $e) {
+                Log::warning('Image resize failed: ' . $e->getMessage());
+            }
 
-            $img = Image::make($the_file);
-
-            $img->resize(1000, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-
-            $img->save($full_path_to_file);
-            if (\Storage::put($file_name, $the_file)) {
-                return response()->json([
-                    'link' => '/' . $relative_path_to_file,
-                ]);
+            // Also upload to configured storage (S3, etc.) if needed
+            if (config('filesystems.default') !== 'public') {
+                $the_file = \File::get($request->file('event_image')->getRealPath());
+                Storage::put($file_name, $the_file);
             }
 
             return response()->json([
-                'error' => trans("Controllers.image_upload_error"),
+                'link' => Storage::disk('public')->url($storagePath),
             ]);
         }
+
+        return response()->json([
+            'error' => trans("Controllers.image_upload_error"),
+        ]);
     }
 
     /**

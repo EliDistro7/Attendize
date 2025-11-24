@@ -42,6 +42,7 @@ RUN mkdir -p storage/framework/sessions \
     storage/framework/cache \
     storage/logs \
     storage/app/public/organiser_images \
+    storage/app/public/event_images \
     bootstrap/cache
 
 # Set ownership to www-data (default PHP-FPM user)
