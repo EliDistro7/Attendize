@@ -1,42 +1,26 @@
 <?php
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+namespace App\Models;
 
-class OrderStatusSeeder extends Seeder
+use Illuminate\Database\Eloquent\Model;
+
+class OrderStatus extends Model
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
-    public function run()
+    // Testing mode - orders complete immediately
+    const COMPLETED = 1;
+    const PENDING = 2;
+    const REFUNDED = 3;
+    const PARTIALLY_REFUNDED = 4;
+    const CANCELLED = 5;
+    
+    // Helper method for testing vs production
+    public static function getDefaultStatus()
     {
-        // Skip if order statuses already exist
-        if (DB::table('order_statuses')->count() > 0) {
-            $this->command->info('Order statuses already exist, skipping...');
-            return;
+        // When testing without payment gateway
+        if (config('app.testing_mode', true)) {
+            return self::COMPLETED;
         }
-        
-        $order_statuses = [
-            [
-                'id' => 1,
-                'name' => 'Completed',
-            ],
-            [
-                'id' => 2,
-                'name' => 'Refunded',
-            ],
-            [
-                'id' => 3,
-                'name' => 'Partially Refunded',
-            ],
-            [
-                'id' => 4,
-                'name' => 'Cancelled',
-            ],
-        ];
-
-        DB::table('order_statuses')->insert($order_statuses);
+        // When payment gateway is added
+        return self::PENDING;
     }
 }
