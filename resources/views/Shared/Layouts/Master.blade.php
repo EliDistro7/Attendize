@@ -16,7 +16,15 @@
         @show
     </title>
 
-    {{-- ✅ DEFINE ATTENDIZE FIRST - Before any other JavaScript --}}
+    <!--Meta-->
+    @include('Shared.Partials.GlobalMeta')
+   <!--/Meta-->
+
+    <!--JS-->
+    {!! Html::script(config('attendize.cdn_url_static_assets').'/vendor/jquery/dist/jquery.min.js') !!}
+    <!--/JS-->
+
+    {{-- ✅ DEFINE ATTENDIZE AFTER JQUERY - So it's available when backend.js loads --}}
     <script>
         window.Attendize = {
             DateTimeFormat: "{{ config('attendize.date_format', 'dd-MM-yyyy HH:mm') }}",
@@ -27,14 +35,6 @@
     </script>
 
     @include('Shared.Layouts.ViewJavascript')
-
-    <!--Meta-->
-    @include('Shared.Partials.GlobalMeta')
-   <!--/Meta-->
-
-    <!--JS-->
-    {!! Html::script(config('attendize.cdn_url_static_assets').'/vendor/jquery/dist/jquery.min.js') !!}
-    <!--/JS-->
 
     <!--Style-->
     {!! Html::style(config('attendize.cdn_url_static_assets').'/assets/stylesheet/application.css') !!}
@@ -144,11 +144,6 @@
 
 <!--JS-->
 @include("Shared.Partials.LangScript")
-
-{{-- ❌ REMOVE THIS - Already defined in <head> --}}
-{{-- <script>
-    window.Attendize = { ... };
-</script> --}}
 
 {!! Html::script('assets/javascript/backend.js') !!}
 
