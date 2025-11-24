@@ -134,6 +134,18 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
+     /*
+    |--------------------------------------------------------------------------
+    | Testing Mode
+    |--------------------------------------------------------------------------
+    |
+    | When true, orders are automatically marked as completed without payment.
+    | Set to false when integrating real payment gateway.
+    |
+    */
+    'testing_mode' => env('TESTING_MODE', true),
+
+
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers

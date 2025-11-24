@@ -1,26 +1,58 @@
 <?php
 
-namespace App\Models;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
-use Illuminate\Database\Eloquent\Model;
-
-class OrderStatus extends Model
+class OrderStatusSeeder extends Seeder
 {
-    // Testing mode - orders complete immediately
-    const COMPLETED = 1;
-    const PENDING = 2;
-    const REFUNDED = 3;
-    const PARTIALLY_REFUNDED = 4;
-    const CANCELLED = 5;
-    
-    // Helper method for testing vs production
-    public static function getDefaultStatus()
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
     {
-        // When testing without payment gateway
-        if (config('app.testing_mode', true)) {
-            return self::COMPLETED;
+        // Skip if order statuses already exist
+        if (DB::table('order_statuses')->count() > 0) {
+            $this->command->info('Order statuses already exist, skipping...');
+            return;
         }
-        // When payment gateway is added
-        return self::PENDING;
+        
+        $order_statuses = [
+            [
+                'id' => 1,
+                'name' => 'Completed',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 2,
+                'name' => 'Pending',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 3,
+                'name' => 'Refunded',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 4,
+                'name' => 'Partially Refunded',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 5,
+                'name' => 'Cancelled',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ];
+
+        DB::table('order_statuses')->insert($order_statuses);
+        
+        $this->command->info('Order statuses seeded successfully!');
     }
 }
