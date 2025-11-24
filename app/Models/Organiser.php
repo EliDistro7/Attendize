@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Support\Facades\Storage;
 use Str;
 use Image;
 
@@ -98,8 +99,16 @@ class Organiser extends MyBaseModel implements AuthenticatableContract
      */
     public function getFullLogoPathAttribute()
     {
-        if ($this->logo_path && (file_exists(public_path($this->logo_path)) || file_exists(config('attendize.cdn_url_user_assets') . '/' . $this->logo_path))) {
-            return config('attendize.cdn_url_user_assets') . '/' . $this->logo_path;
+        if ($this->logo_path) {
+            // Check if file exists in storage (new method)
+            if (Storage::disk('public')->exists($this->logo_path)) {
+                return Storage::disk('public')->url($this->logo_path);
+            }
+            
+            // Fallback to old public path method (backwards compatibility)
+            if (file_exists(public_path($this->logo_path)) || file_exists(config('attendize.cdn_url_user_assets') . '/' . $this->logo_path)) {
+                return config('attendize.cdn_url_user_assets') . '/' . $this->logo_path;
+            }
         }
 
         return config('attendize.fallback_organiser_logo_url');
@@ -142,7 +151,7 @@ class Organiser extends MyBaseModel implements AuthenticatableContract
 
 
     /**
-     * Set a new Logo for the Organiser
+     * Set a new Logo for the Organiser - Updated to use Laravel Storage
      *
      * @param \Illuminate\Http\UploadedFile $file
      */
@@ -150,15 +159,16 @@ class Organiser extends MyBaseModel implements AuthenticatableContract
     {
         $filename = Str::slug($this->name).'-logo-'.$this->id.'.'.strtolower($file->getClientOriginalExtension());
 
-        // Image Directory
-        $imageDirectory = public_path() . '/' . config('attendize.organiser_images_path');
+        // Use storage/app/public instead of public/ directory
+        $storagePath = 'organiser_images/' . $filename;
+        
+        // Store the file in storage/app/public/organiser_images/
+        $file->storeAs('organiser_images', $filename, 'public');
+        
+        // Get the full path for image manipulation
+        $absolutePath = storage_path('app/public/' . $storagePath);
 
-        // Paths
-        $relativePath = config('attendize.organiser_images_path').'/'.$filename;
-        $absolutePath = public_path($relativePath);
-
-        $file->move($imageDirectory, $filename);
-
+        // Resize and optimize the image
         $img = Image::make($absolutePath);
 
         $img->resize(250, 250, function ($constraint) {
@@ -168,8 +178,10 @@ class Organiser extends MyBaseModel implements AuthenticatableContract
 
         $img->save($absolutePath);
 
-        if (file_exists($absolutePath)) {
-            $this->logo_path = $relativePath;
+        // Verify file exists and save the path
+        if (Storage::disk('public')->exists($storagePath)) {
+            // Store just the path relative to storage/app/public
+            $this->logo_path = $storagePath;
         }
     }
 
@@ -180,4 +192,3 @@ class Organiser extends MyBaseModel implements AuthenticatableContract
         $this->rules = array_merge($this->rules, $this->extra_rules);
     }
 }
-
