@@ -63,7 +63,7 @@
             "app/Services",
             "app/Services/PaymentGateway",
             "database",
-            "database/seeds",
+            "database/seeders",
             "database/factories"
         ],
         "psr-4": {
