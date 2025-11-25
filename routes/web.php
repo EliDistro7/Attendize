@@ -225,6 +225,10 @@ Route::get('/api/mobile-payment-status/{transaction_id}',
     
     });
 
+       Route::get('order/{order_reference}',
+        [EventCheckoutController::class, 'showOrderDetails']
+    )->name('showOrderDetails');
+
       Route::get('{event_id}/checkout/success',
             [EventCheckoutController::class, 'showEventCheckoutPaymentReturn']
         )->name('showEventCheckoutPaymentReturn');
@@ -235,12 +239,7 @@ Route::get('/api/mobile-payment-status/{transaction_id}',
     [App\Http\Controllers\TermsController::class, 'show']
 )->name('termsAndConditions');
 
-    /*
-     * Public view order routes
-     */
-    Route::get('order/{order_reference}',
-        [EventCheckoutController::class, 'showOrderDetails']
-    )->name('showOrderDetails');
+   
 
   
 
