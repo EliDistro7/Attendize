@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Database\Seeders;
-
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -17,11 +15,9 @@ class OrderStatusSeeder extends Seeder
      */
     public function run()
     {
-        // Skip if order statuses already exist
-        if (DB::table('order_statuses')->count() > 0) {
-            $this->command->info('Order statuses already exist, skipping...');
-            return;
-        }
+        // Delete existing order statuses
+        DB::table('order_statuses')->delete();
+        $this->command->info('Existing order statuses deleted.');
         
         $order_statuses = [
             [
