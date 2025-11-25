@@ -229,6 +229,11 @@ Route::get('/api/mobile-payment-status/{transaction_id}',
         [EventCheckoutController::class, 'showOrderDetails']
     )->name('showOrderDetails');
 
+    // Add this new route:
+Route::get('order/{order_reference}/tickets',
+    [EventCheckoutController::class, 'showOrderTickets']
+)->name('showOrderTickets');
+
       Route::get('{event_id}/checkout/success',
             [EventCheckoutController::class, 'showEventCheckoutPaymentReturn']
         )->name('showEventCheckoutPaymentReturn');

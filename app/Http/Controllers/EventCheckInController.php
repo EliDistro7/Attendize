@@ -123,6 +123,33 @@ class EventCheckInController extends MyBaseController
         ]);
     }
 
+    /**
+ * Show/Download the order tickets PDF
+ *
+ * @param string $order_reference
+ * @return \Illuminate\Http\Response
+ */
+public function showOrderTickets($order_reference)
+{
+    $order = \App\Models\Order::where('order_reference', $order_reference)->firstOrFail();
+    
+    // Generate PDF if it doesn't exist
+    if (!$order->ticket_pdf_path || !file_exists(public_path($order->ticket_pdf_path))) {
+        $order->generatePdfTickets();
+    }
+    
+    $pdf_path = public_path($order->ticket_pdf_path);
+    
+    if (!file_exists($pdf_path)) {
+        abort(404, 'Tickets not found');
+    }
+    
+    return response()->file($pdf_path, [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => 'inline; filename="tickets-' . $order->order_reference . '.pdf"'
+    ]);
+}
+
 
     /**
      * Check in an attendee
