@@ -23,32 +23,22 @@ class OrderStatusSeeder extends Seeder
             [
                 'id' => 1,
                 'name' => 'Completed',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'id' => 2,
                 'name' => 'Pending',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'id' => 3,
                 'name' => 'Refunded',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'id' => 4,
                 'name' => 'Partially Refunded',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'id' => 5,
                 'name' => 'Cancelled',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
         ];
 
