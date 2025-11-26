@@ -132,7 +132,7 @@
                                             <input type="radio" name="payment_method" value="mpesa" id="mpesa">
                                             <label for="mpesa" class="provider-label">
                                                 <div class="provider-content">
-                                                    <img src="/images/mpesa-logo.png" alt="M-Pesa" class="provider-logo">
+                                                    <img src="/images/mpesa.png" alt="M-Pesa" class="provider-logo">
                                                     <span class="provider-name">M-Pesa</span>
                                                     <small class="provider-desc">Vodacom</small>
                                                 </div>
@@ -142,7 +142,7 @@
                                             <input type="radio" name="payment_method" value="tigopesa" id="tigopesa">
                                             <label for="tigopesa" class="provider-label">
                                                 <div class="provider-content">
-                                                    <img src="/images/tigopesa-logo.png" alt="Tigo Pesa" class="provider-logo">
+                                                    <img src="/images/tigopesa.png" alt="Tigo Pesa" class="provider-logo">
                                                     <span class="provider-name">Tigo Pesa</span>
                                                     <small class="provider-desc">Tigo</small>
                                                 </div>
@@ -152,7 +152,7 @@
                                             <input type="radio" name="payment_method" value="airtel" id="airtel">
                                             <label for="airtel" class="provider-label">
                                                 <div class="provider-content">
-                                                    <img src="/images/airtel-logo.png" alt="Airtel Money" class="provider-logo">
+                                                    <img src="/images/airtel.png" alt="Airtel Money" class="provider-logo">
                                                     <span class="provider-name">Airtel Money</span>
                                                     <small class="provider-desc">Airtel</small>
                                                 </div>
