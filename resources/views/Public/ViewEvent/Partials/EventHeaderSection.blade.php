@@ -10,6 +10,23 @@
     </div>
 </section>
 @endif
+
+{{-- Login Banner for Non-Authenticated Users --}}
+@guest
+<section id="loginBanner" class="alert alert-info" style="margin-bottom: 0; border-radius: 0; text-align: center;">
+    <div class="container">
+        <strong>@lang("Public_ViewEvent.want_more_features")</strong>
+        <a href="{{ route('login') }}" class="btn btn-success btn-sm" style="margin-left: 10px;">
+            <i class="fa fa-sign-in"></i> @lang("Public_ViewEvent.login")
+        </a>
+        <span style="margin-left: 10px;">or</span>
+        <a href="{{ route('showSignup') }}" class="btn btn-link btn-sm">
+            @lang("Public_ViewEvent.create_account")
+        </a>
+    </div>
+</section>
+@endguest
+
 <section id="organiserHead" class="container-fluid">
     <div class="container">
         <div class="row">

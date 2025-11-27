@@ -98,6 +98,11 @@ return [
     'your_information'                  => 'Your information',
     'your_message'                      => 'Your message',
     'your_name'                         => 'Your name',
+
+    // Add these missing keys:
+    'want_more_features'                => 'Want to create event and earn money?',
+    'login'                             => 'Login',
+    'create_account'                    => 'Create an Account',
     
     // Mobile Money Payment Translations
     'select_payment_method'             => 'Select Payment Method',
