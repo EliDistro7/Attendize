@@ -1,6 +1,9 @@
 <?php
 
+namespace Database\Seeders;
+
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class TimezoneSeeder extends Seeder
 {
@@ -11,12 +14,6 @@ class TimezoneSeeder extends Seeder
      */
     public function run()
     {
-        // Delete existing timezones and create new ones
-        if (DB::table('timezones')->count() > 0) {
-            $this->command->info('Deleting existing timezones...');
-            DB::table('timezones')->truncate();
-        }
-
         $timezones = [
             ['id' => 1, 'name' => 'Pacific/Midway', 'location' => '(GMT-11:00) Midway Island'],
             ['id' => 2, 'name' => 'US/Samoa', 'location' => '(GMT-11:00) Samoa'],
@@ -133,6 +130,13 @@ class TimezoneSeeder extends Seeder
             ['id' => 113, 'name' => 'Pacific/Fiji', 'location' => '(GMT+12:00) Fiji'],
         ];
 
-        DB::table('timezones')->insert($timezones);
+        foreach ($timezones as $timezone) {
+            DB::table('timezones')->updateOrInsert(
+                ['id' => $timezone['id']], // Match on ID
+                $timezone // Update/Insert with this data
+            );
+        }
+        
+        $this->command->info('Timezones seeded successfully!');
     }
 }

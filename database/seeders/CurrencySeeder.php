@@ -1,5 +1,7 @@
 <?php
 
+namespace Database\Seeders;
+
 use App\Models\Currency;
 use Illuminate\Database\Seeder;
 
@@ -11,11 +13,7 @@ class CurrencySeeder extends Seeder
      */
     public function run()
     {
-        // Delete existing currencies and create new ones
-        if (Currency::count() > 0) {
-            $this->command->info('Deleting existing currencies...');
-            Currency::truncate();
-        }
+     
         $currencies = [
             [
                 'id' => 1,
@@ -537,9 +535,13 @@ class CurrencySeeder extends Seeder
             ],
         ];
 
-        collect($currencies)->map(function($currency) {
-          
-            Currency::create($currency);
-        });
+        foreach ($currencies as $currency) {
+        Currency::updateOrCreate(
+            ['id' => $currency['id']], // Match on ID
+            $currency // Update/Create with this data
+        );
+    }
+    
+    $this->command->info('Currencies seeded successfully!');
     }
 }
