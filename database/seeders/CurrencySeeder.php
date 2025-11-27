@@ -11,11 +11,11 @@ class CurrencySeeder extends Seeder
      */
     public function run()
     {
-        // Only seed if table is empty
-    if (Currency::count() > 0) {
-        $this->command->info('Currencies already exist, skipping...');
-        return;
-    };
+        // Delete existing currencies and create new ones
+        if (Currency::count() > 0) {
+            $this->command->info('Deleting existing currencies...');
+            Currency::truncate();
+        }
         $currencies = [
             [
                 'id' => 1,
@@ -513,6 +513,20 @@ class CurrencySeeder extends Seeder
                 'symbol_left' => '¥',
                 'symbol_right' => '',
                 'code' => 'CNY',
+                'decimal_place' => 2,
+                'value' => 0.00,
+                'decimal_point' => '.',
+                'thousand_point' => ',',
+                'status' => 1,
+                'created_at' => '2015-07-22 23:25:30',
+                'updated_at' => '2015-07-22 23:25:30',
+            ],
+            [
+                'id' => 37,
+                'title' => 'Tanzanian Shilling',
+                'symbol_left' => 'TSh ',
+                'symbol_right' => '',
+                'code' => 'TZS',
                 'decimal_place' => 2,
                 'value' => 0.00,
                 'decimal_point' => '.',

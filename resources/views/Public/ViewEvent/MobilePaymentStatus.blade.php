@@ -129,6 +129,8 @@
                                         <i class="fa fa-refresh"></i> Check Status
                                     </button>
                                     <a href="{{route('showEventPage', ['event_id' => $event->id])}}" class="btn btn-default">
+          
+                                    \
                                         <i class="fa fa-arrow-left"></i> Back to Event
                                     </a>
                                 </div>
