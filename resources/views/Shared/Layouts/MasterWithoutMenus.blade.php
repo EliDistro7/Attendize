@@ -8,11 +8,11 @@
         @include('Shared.Partials.GlobalMeta')
 
         <!--JS-->
-       {!! Html::script('vendor/jquery/dist/jquery.min.js') !!}
+       {!! Html::script(asset('vendor/jquery/dist/jquery.min.js')) !!}
         <!--/JS-->
 
         <!--Style-->
-       {!!Html::style('assets/stylesheet/application.css')!!}
+       {!! Html::style(asset('assets/stylesheet/application.css')) !!}
         <!--/Style-->
 
         @yield('head')
@@ -76,7 +76,7 @@
         </div>
 
         @include("Shared.Partials.LangScript")
-        {!!Html::script('assets/javascript/')!!}
+        {!! Html::script(asset('assets/javascript/backend.js')) !!}
     </body>
     @include('Shared.Partials.GlobalFooterJS')
 </html>
