@@ -115,8 +115,9 @@ Route::group(
             [UserSignupController::class, 'showSignup']
         )->name('showSignup');
 
-        Route::post('/signup',
-            [UserSignupController::class, 'postSignup'])->middleware('throttle:3,1');
+       Route::post('/signup',
+    [UserSignupController::class, 'postSignup']
+)->name('postSignup')->middleware('throttle:3,1');
 
         /*
          * Confirm Email

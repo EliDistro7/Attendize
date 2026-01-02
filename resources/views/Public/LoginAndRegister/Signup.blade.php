@@ -7,7 +7,7 @@
 @section('content')
     <div class="row">
         <div class="col-md-7 col-md-offset-2">
-            {!! Form::open(['url' => route("showSignup"), 'class' => 'panel', 'id' => 'signup-form']) !!}
+            {!! Form::open(['route' => 'postSignup', 'class' => 'panel', 'id' => 'signup-form']) !!} !!}
             <div class="panel-body">
                 <div class="logo">
                    {!! Html::image('assets/images/logo-dark.png') !!}
