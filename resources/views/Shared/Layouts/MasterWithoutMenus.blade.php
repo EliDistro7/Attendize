@@ -76,7 +76,7 @@
         </div>
 
         @include("Shared.Partials.LangScript")
-        {!!Html::script('assets/javascript/backend.js')!!}
+        {!!Html::script('assets/javascript/')!!}
     </body>
     @include('Shared.Partials.GlobalFooterJS')
 </html>

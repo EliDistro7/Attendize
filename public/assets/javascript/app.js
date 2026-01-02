@@ -12,10 +12,9 @@ $(function () {
         var $div = $("<div>", {id: "DatePicker"});
         $("body").append($div);
         $div.DateTimePicker({
-            dateTimeFormat: Attendize.DateTimeFormat,
-            dateSeparator: Attendize.DateSeparator
+            dateTimeFormat: (typeof Attendize !== 'undefined' && Attendize.DateTimeFormat) || 'dd-MM-yyyy HH:mm',
+            dateSeparator: (typeof Attendize !== 'undefined' && Attendize.DateSeparator) || '-'
         });
-
     });
 
     /* Responsive sidebar */
@@ -244,7 +243,7 @@ $(function () {
                         break;
                 }
             }).fail(function (data) {
-            showMessage(Attendize.GenericErrorMessages);
+            showMessage((typeof Attendize !== 'undefined' && Attendize.GenericErrorMessages) || 'An error occurred');
         });
 
         e.preventDefault();
@@ -277,7 +276,7 @@ $(function () {
                         break;
                 }
             }).fail(function (data) {
-            showMessage(Attendize.GenericErrorMessages);
+            showMessage((typeof Attendize !== 'undefined' && Attendize.GenericErrorMessages) || 'An error occurred');
         });
 
 
@@ -423,7 +422,7 @@ $(function () {
                         break;
                 }
             }).fail(function (data) {
-            showMessage(Attendize.GenericErrorMessages);
+            showMessage((typeof Attendize !== 'undefined' && Attendize.GenericErrorMessages) || 'An error occurred');
         });
         e.preventDefault();
     });

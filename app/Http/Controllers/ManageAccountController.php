@@ -59,8 +59,8 @@ class ManageAccountController extends MyBaseController
             $latestVersion = Utils::parse_version((string)$response->getBody());
             $installedVersion = trim(file_get_contents(base_path('VERSION')));
         } catch (\Exception $exception) {
-            \Log::warn("Error retrieving the latest Attendize version. ManageAccountController.getVersionInf() try/catch");
-            \Log::warn($exception);
+            \Log::warning("Error retrieving the latest Attendize version. ManageAccountController.getVersionInfo() try/catch");
+            \Log::warning($exception);
             return false;
         }
 

@@ -9409,16 +9409,15 @@ $.cf = {
      */
 
     /* Datepicker */
-    $(document).ajaxComplete(function () {
-        $('#DatePicker').remove();
-        var $div = $("<div>", {id: "DatePicker"});
-        $("body").append($div);
-        $div.DateTimePicker({
-            dateTimeFormat: Attendize.DateTimeFormat,
-            dateSeparator: Attendize.DateSeparator
-        });
-
+ $(document).ajaxComplete(function () {
+    $('#DatePicker').remove();
+    var $div = $("<div>", {id: "DatePicker"});
+    $("body").append($div);
+    $div.DateTimePicker({
+        dateTimeFormat: (typeof Attendize !== 'undefined' && Attendize.DateTimeFormat) || 'Y-m-d H:i',
+        dateSeparator: (typeof Attendize !== 'undefined' && Attendize.DateSeparator) || '-'
     });
+});
 
     /* Responsive sidebar */
     $(document.body).on('click', '.toggleSidebar', function (e) {
