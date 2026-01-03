@@ -3,6 +3,46 @@ set -e
 
 echo "Starting application initialization..."
 
+# ===== CRITICAL: Configure DNS FIRST before anything else =====
+echo "Configuring DNS resolution..."
+cat > /etc/resolv.conf << EOF
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+nameserver 1.1.1.1
+options timeout:2 attempts:3 rotate
+EOF
+
+# Make resolv.conf immutable to prevent overwrites
+chattr +i /etc/resolv.conf 2>/dev/null || echo "Note: Cannot make resolv.conf immutable"
+
+# Wait for network to be available
+echo "Waiting for network connectivity..."
+max_network_tries=30
+network_count=0
+until ping -c 1 -W 2 8.8.8.8 >/dev/null 2>&1 || [ $network_count -eq $max_network_tries ]; do
+  echo "Waiting for network... (attempt $((network_count+1))/$max_network_tries)"
+  sleep 2
+  network_count=$((network_count+1))
+done
+
+if [ $network_count -eq $max_network_tries ]; then
+  echo "ERROR: Network connectivity timeout"
+  exit 1
+fi
+
+echo "Network is ready!"
+
+# Test database hostname resolution
+echo "Testing database hostname resolution..."
+if nslookup ${DB_HOST:-mysql-309e22d7-club-255.g.aivencloud.com} >/dev/null 2>&1; then
+  echo "✓ Database hostname resolved successfully"
+else
+  echo "ERROR: Cannot resolve database hostname: ${DB_HOST}"
+  echo "Attempting to get DNS info..."
+  nslookup ${DB_HOST:-mysql-309e22d7-club-255.g.aivencloud.com} || true
+  echo "This may be a temporary DNS issue. Attempting to continue..."
+fi
+
 # Ensure permissions are correct at runtime
 echo "Setting permissions..."
 chown -R www-data:www-data /usr/share/nginx/html/storage /usr/share/nginx/html/bootstrap/cache
@@ -10,17 +50,24 @@ chmod -R 775 /usr/share/nginx/html/storage /usr/share/nginx/html/bootstrap/cache
 
 # Wait for database to be ready
 echo "Waiting for database connection..."
-max_tries=10
+max_tries=15
 count=0
 until php artisan tinker --execute="DB::connection()->getPdo(); echo 'Connected';" 2>/dev/null || [ $count -eq $max_tries ]; do
   echo "Database not ready yet... waiting (attempt $((count+1))/$max_tries)"
-  sleep 2
+  sleep 3
   count=$((count+1))
 done
 
 if [ $count -eq $max_tries ]; then
-  echo "Warning: Could not verify database connection, proceeding anyway..."
+  echo "ERROR: Database connection timeout"
+  echo "Debug info:"
+  echo "DB_HOST: ${DB_HOST}"
+  echo "DB_PORT: ${DB_PORT}"
+  echo "DB_DATABASE: ${DB_DATABASE}"
+  exit 1
 fi
+
+echo "✓ Database connected successfully!"
 
 # Ensure app is not in maintenance mode
 echo "Taking application out of maintenance mode..."
