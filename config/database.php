@@ -45,7 +45,7 @@ return [
 
         
 
-     'mysql' => [
+    'mysql' => [
     'driver' => 'mysql',
     'url' => env('DATABASE_URL'),
     'host' => env('DB_HOST', '127.0.0.1'),
@@ -58,14 +58,23 @@ return [
     'collation' => 'utf8mb4_unicode_ci',
     'prefix' => '',
     'prefix_indexes' => true,
-    'strict' => true,
+    'strict' => false,  // Changed: Better compatibility with Aiven
     'engine' => null,
     'options' => extension_loaded('pdo_mysql') ? array_filter([
-        // Aiven SSL Configurat
+        // Aiven SSL Configuration
         PDO::MYSQL_ATTR_SSL_CA => '/etc/ssl/certs/aiven-ca.crt',
-        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => true,
-        PDO::ATTR_TIMEOUT => 10,
+        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,  // Changed: More lenient for Aiven
+        
+        // CRITICAL: Fix COM_STMT_PREPARE error
+        PDO::ATTR_EMULATE_PREPARES => true,
+        
+        // Timeouts and error handling
+        PDO::ATTR_TIMEOUT => 30,
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        
+        // MySQL-specific settings
+        PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+        PDO::MYSQL_ATTR_INIT_COMMAND => "SET sql_mode='NO_ENGINE_SUBSTITUTION'",
     ]) : [],
 ],
         'pgsql' => [
