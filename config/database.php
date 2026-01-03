@@ -45,7 +45,7 @@ return [
 
         
 
-       'mysql' => [
+     'mysql' => [
     'driver' => 'mysql',
     'url' => env('DATABASE_URL'),
     'host' => env('DB_HOST', '127.0.0.1'),
@@ -61,8 +61,9 @@ return [
     'strict' => true,
     'engine' => null,
     'options' => extension_loaded('pdo_mysql') ? array_filter([
-        PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA', '/etc/ssl/certs/aiven-ca.crt'),
-        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false, // Set to false if CA cert issues
+        // Aiven SSL Configuration
+        PDO::MYSQL_ATTR_SSL_CA => '/etc/ssl/certs/aiven-ca.crt',
+        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => true,
         PDO::ATTR_TIMEOUT => 10,
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     ]) : [],
