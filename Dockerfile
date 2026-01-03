@@ -1,5 +1,4 @@
 # Multi stage docker file for the Attendize application layer images
-
 # Use official PHP-FPM image with Debian Bullseye - UPGRADED TO 8.3
 FROM php:8.3-fpm-bullseye as base
 
@@ -20,6 +19,9 @@ RUN apt-get update && apt-get install -y \
     libgmp-dev \
     supervisor \
     default-mysql-client \
+    dnsutils \
+    iputils-ping \
+    net-tools \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip gmp \
     && apt-get clean \
@@ -53,7 +55,6 @@ RUN chmod -R 775 storage bootstrap/cache
 
 # The worker container runs the laravel queue in the background
 FROM base as worker
-
 CMD ["php", "artisan", "queue:work", "--daemon"]
 
 # The web container runs the HTTP server and connects to all other services in the application stack
