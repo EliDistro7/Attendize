@@ -43,40 +43,26 @@ return [
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
 
-        
+        'mysql' => [
+            'driver' => 'mysql',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'forge'),
+            'username' => env('DB_USERNAME', 'forge'),
+            'password' => env('DB_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
 
-    'mysql' => [
-    'driver' => 'mysql',
-    'url' => env('DATABASE_URL'),
-    'host' => env('DB_HOST', '127.0.0.1'),
-    'port' => env('DB_PORT', '3306'),
-    'database' => env('DB_DATABASE', 'forge'),
-    'username' => env('DB_USERNAME', 'forge'),
-    'password' => env('DB_PASSWORD', ''),
-    'unix_socket' => env('DB_SOCKET', ''),
-    'charset' => 'utf8mb4',
-    'collation' => 'utf8mb4_unicode_ci',
-    'prefix' => '',
-    'prefix_indexes' => true,
-    'strict' => false,  // Changed: Better compatibility with Aiven
-    'engine' => null,
-    'options' => extension_loaded('pdo_mysql') ? array_filter([
-        // Aiven SSL Configuration
-        PDO::MYSQL_ATTR_SSL_CA => '/etc/ssl/certs/aiven-ca.crt',
-        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,  // Changed: More lenient for Aiven
-        
-        // CRITICAL: Fix COM_STMT_PREPARE error
-        PDO::ATTR_EMULATE_PREPARES => true,
-        
-        // Timeouts and error handling
-        PDO::ATTR_TIMEOUT => 30,
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        
-        // MySQL-specific settings
-        PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
-        PDO::MYSQL_ATTR_INIT_COMMAND => "SET sql_mode='NO_ENGINE_SUBSTITUTION'",
-    ]) : [],
-],
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
