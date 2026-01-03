@@ -85,7 +85,7 @@ RUN sed -i 's/user\s*nginx;/user www-data;/' /etc/nginx/nginx.conf || \
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Ports to expose
+# Ports for nginx
 EXPOSE 80
 EXPOSE 443
 
