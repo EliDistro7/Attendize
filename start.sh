@@ -93,12 +93,26 @@ else
   echo "⚠ Skipping database operations due to connection failure"
 fi
 
-# Clear all caches
-echo "Clearing caches..."
+# Clear all caches with force
+echo "Clearing all caches (including image cache)..."
+php artisan cache:clear 2>/dev/null || true
 php artisan config:clear 2>/dev/null || true
 php artisan route:clear 2>/dev/null || true
 php artisan view:clear 2>/dev/null || true
-php artisan cache:clear 2>/dev/null || true
+
+# Clear compiled files
+php artisan clear-compiled 2>/dev/null || true
+
+# Clear storage framework cache
+rm -rf storage/framework/cache/data/* 2>/dev/null || true
+rm -rf storage/framework/views/* 2>/dev/null || true
+rm -rf storage/framework/sessions/* 2>/dev/null || true
+
+# Recreate storage link for public files
+echo "Creating storage symlink..."
+php artisan storage:link --force 2>/dev/null || echo "Storage link already exists or failed"
+
+echo "Cache cleared successfully!"
 
 # Run Laravel optimization
 echo "Optimizing Laravel..."
@@ -111,6 +125,15 @@ echo "=========================================="
 echo "Application initialization complete!"
 echo "=========================================="
 echo ""
+echo "If you see 500 errors, check logs at:"
+echo "  storage/logs/laravel.log"
+echo ""
+
+# Show last few log entries if they exist
+if [ -f storage/logs/laravel.log ]; then
+  echo "Recent Laravel logs:"
+  tail -n 20 storage/logs/laravel.log 2>/dev/null || true
+fi
 
 # Start services
 echo "Starting PHP-FPM..."
