@@ -34,6 +34,10 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /usr/share/nginx/html
 COPY . .
 
+# Copy Aiven CA certificate (create this file first - see instructions)
+COPY ca-certificate.crt /etc/ssl/certs/aiven-ca.crt
+RUN chmod 644 /etc/ssl/certs/aiven-ca.crt
+
 # Install composer dependencies first
 RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=php --no-scripts
 
@@ -85,7 +89,7 @@ RUN sed -i 's/user\s*nginx;/user www-data;/' /etc/nginx/nginx.conf || \
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Ports for nginx
+# Ports to expose
 EXPOSE 80
 EXPOSE 443
 
