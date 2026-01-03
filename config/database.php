@@ -61,7 +61,7 @@ return [
     'strict' => true,
     'engine' => null,
     'options' => extension_loaded('pdo_mysql') ? array_filter([
-        // Aiven SSL Configuration
+        // Aiven SSL Configurat
         PDO::MYSQL_ATTR_SSL_CA => '/etc/ssl/certs/aiven-ca.crt',
         PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => true,
         PDO::ATTR_TIMEOUT => 10,
