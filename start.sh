@@ -41,33 +41,53 @@ php artisan tinker --execute="
 echo "Running database migrations..."
 php artisan migrate --force || echo "Warning: Migrations failed or already run"
 
-# Insert critical timezone data directly using SQL
+# Inspect and insert timezone data
 echo "Ensuring timezone data exists..."
 php artisan tinker --execute="
-  if (DB::table('timezones')->count() === 0) {
-    DB::table('timezones')->insert([
-      ['id' => 1, 'name' => 'UTC', 'location' => 'UTC', 'diff_from_gtm' => '+00:00'],
-      ['id' => 2, 'name' => 'America/New_York', 'location' => 'America/New_York', 'diff_from_gtm' => '-05:00'],
-      ['id' => 30, 'name' => 'Africa/Dar_es_Salaam', 'location' => 'Africa/Dar_es_Salaam', 'diff_from_gtm' => '+03:00'],
-    ]);
-    echo 'Timezones inserted successfully';
-  } else {
-    echo 'Timezones already exist';
+  try {
+    \$count = DB::table('timezones')->count();
+    if (\$count === 0) {
+      // Get actual column names
+      \$columns = DB::getSchemaBuilder()->getColumnListing('timezones');
+      echo 'Timezone columns: ' . implode(', ', \$columns) . PHP_EOL;
+      
+      // Insert with only existing columns
+      DB::table('timezones')->insert([
+        ['id' => 1, 'name' => 'UTC', 'location' => 'UTC'],
+        ['id' => 2, 'name' => 'America/New_York', 'location' => 'America/New_York'],
+        ['id' => 30, 'name' => 'Africa/Dar_es_Salaam', 'location' => 'Africa/Dar_es_Salaam'],
+      ]);
+      echo 'Timezones inserted successfully';
+    } else {
+      echo 'Timezones already exist (' . \$count . ' records)';
+    }
+  } catch (Exception \$e) {
+    echo 'Timezone setup failed: ' . \$e->getMessage();
   }
-" 2>/dev/null || echo "Timezone insert failed"
+" 2>/dev/null || echo "Timezone insert skipped"
 
-# Insert currency data
+# Inspect and insert currency data
 echo "Ensuring currency data exists..."
 php artisan tinker --execute="
-  if (DB::table('currencies')->count() === 0) {
-    DB::table('currencies')->insert([
-      ['id' => 1, 'code' => 'USD', 'symbol' => '\$', 'title' => 'US Dollar'],
-      ['id' => 2, 'code' => 'EUR', 'symbol' => '€', 'title' => 'Euro'],
-      ['id' => 3, 'code' => 'GBP', 'symbol' => '£', 'title' => 'Pound Sterling'],
-    ]);
-    echo 'Currencies inserted successfully';
-  } else {
-    echo 'Currencies already exist';
+  try {
+    \$count = DB::table('currencies')->count();
+    if (\$count === 0) {
+      // Get actual column names
+      \$columns = DB::getSchemaBuilder()->getColumnListing('currencies');
+      echo 'Currency columns: ' . implode(', ', \$columns) . PHP_EOL;
+      
+      // Insert with only existing columns
+      DB::table('currencies')->insert([
+        ['id' => 1, 'code' => 'USD', 'title' => 'US Dollar'],
+        ['id' => 2, 'code' => 'EUR', 'title' => 'Euro'],
+        ['id' => 3, 'code' => 'GBP', 'title' => 'Pound Sterling'],
+      ]);
+      echo 'Currencies inserted successfully';
+    } else {
+      echo 'Currencies already exist (' . \$count . ' records)';
+    }
+  } catch (Exception \$e) {
+    echo 'Currency setup failed: ' . \$e->getMessage();
   }
 " 2>/dev/null || true
 
