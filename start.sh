@@ -12,7 +12,7 @@ chmod -R 775 /usr/share/nginx/html/storage /usr/share/nginx/html/bootstrap/cache
 echo "Waiting for database connection..."
 max_tries=10
 count=0
-until php artisan db:monitor --max-attempts=1 2>/dev/null || [ $count -eq $max_tries ]; do
+until php artisan tinker --execute="DB::connection()->getPdo(); echo 'Connected';" 2>/dev/null || [ $count -eq $max_tries ]; do
   echo "Database not ready yet... waiting (attempt $((count+1))/$max_tries)"
   sleep 2
   count=$((count+1))
@@ -56,7 +56,7 @@ php artisan tinker --execute="
   }
 " 2>/dev/null || echo "Timezone insert failed"
 
-# Insert currency data - FIXED VERSION
+# Insert currency data
 echo "Ensuring currency data exists..."
 php artisan tinker --execute="
   if (DB::table('currencies')->count() === 0) {
