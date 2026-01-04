@@ -164,133 +164,141 @@
         </div>
     </div>
 
-    <script>
-        let statusCheckInterval;
-        let checkCount = 0;
-        const maxChecks = 20;
+ <script>
+    let statusCheckInterval;
+    let checkCount = 0;
+    const maxChecks = 40; // Keep reasonable number of checks
 
-        // Translation strings for JavaScript
-        const translations = {
-            checking: "@lang('MobilePayment.checking_payment_status')",
-            success: "@lang('MobilePayment.payment_successful_redirecting')",
-            failed: "@lang('MobilePayment.payment_failed_message')",
-            unableToCheck: "@lang('MobilePayment.unable_to_check_status')",
-            timeout: "@lang('MobilePayment.status_check_timeout')",
-            orderCompletedRedirectFailed: "@lang('MobilePayment.order_completed_redirect_failed')",
-            viewOrders: "@lang('MobilePayment.view_your_orders')"
-        };
+    // Translation strings for JavaScript
+    const translations = {
+        checking: "@lang('MobilePayment.checking_payment_status')",
+        success: "@lang('MobilePayment.payment_successful_redirecting')",
+        failed: "@lang('MobilePayment.payment_failed_message')",
+        unableToCheck: "@lang('MobilePayment.unable_to_check_status')",
+        timeout: "@lang('MobilePayment.status_check_timeout')",
+        orderCompletedRedirectFailed: "@lang('MobilePayment.order_completed_redirect_failed')",
+        viewOrders: "@lang('MobilePayment.view_your_orders')"
+    };
 
-        function checkStatus() {
-            console.log('started checking status');
-            const statusMessage = document.getElementById('status-message');
-            const transactionId = '{{$transaction_id}}';
-            const eventId = '{{$event->id}}';
-            
-            statusMessage.className = 'alert alert-info';
-            statusMessage.innerHTML = '<i class="fa fa-spinner fa-spin"></i> ' + translations.checking;
-            statusMessage.style.display = 'block';
-            
-            fetch(`/api/mobile-payment-status/${transactionId}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Status check response:', data);
-                updateStatusDisplay(data);
-            })
-            .catch(error => {
-                console.error('Status check error:', error);
-                statusMessage.className = 'alert alert-warning';
-                statusMessage.innerHTML = '<i class="fa fa-exclamation-triangle"></i> ' + translations.unableToCheck;
-            });
-        }
-
-        function updateStatusDisplay(data) {
-            const statusMessage = document.getElementById('status-message');
-            const statusIndicator = document.querySelector('.status-indicator');
-            
-            console.log('Full API response:', data);
-            console.log('Status:', data.status);
-            console.log('Redirect URL:', data.redirect_url);
-            
-            if (data.status === 'completed') {
-                statusIndicator.className = 'status-indicator success';
-                statusIndicator.innerHTML = '<i class="fa fa-check-circle fa-3x"></i>';
-                
-                statusMessage.className = 'alert alert-success';
-                statusMessage.innerHTML = '<i class="fa fa-check"></i> ' + translations.success;
-                
-                if (statusCheckInterval) {
-                    clearInterval(statusCheckInterval);
-                }
-                
-                setTimeout(() => {
-                    if (data.redirect_url) {
-                        console.log('Redirecting to:', data.redirect_url);
-                        window.location.href = data.redirect_url;
-                    } else {
-                        console.error('No redirect_url in response:', data);
-                        statusMessage.className = 'alert alert-warning';
-                        
-                        if (data.order_reference) {
-                            //const fallbackUrl = `/order/${data.order_reference}`;
-                            const fallbackUrl = `/order/${data.order_reference}/tickets`;
-                            console.log('Using fallback URL:', fallbackUrl);
-                            window.location.href = fallbackUrl;
-                        } else {
-                            statusMessage.innerHTML = translations.orderCompletedRedirectFailed + ' <a href="/order">' + translations.viewOrders + '</a>';
-                        }
-                    }
-                }, 5000);
-                
-            } else if (data.status === 'failed') {
-                statusIndicator.className = 'status-indicator failed';
-                statusIndicator.innerHTML = '<i class="fa fa-times-circle fa-3x"></i>';
-                
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerHTML = '<i class="fa fa-times"></i> ' + translations.failed;
-                
-                if (statusCheckInterval) {
-                    clearInterval(statusCheckInterval);
-                }
+    function checkStatus() {
+        console.log('started checking status - attempt ' + (checkCount + 1));
+        const statusMessage = document.getElementById('status-message');
+        const transactionId = '{{$transaction_id}}';
+        const eventId = '{{$event->id}}';
+        
+        statusMessage.className = 'alert alert-info';
+        statusMessage.innerHTML = '<i class="fa fa-spinner fa-spin"></i> ' + translations.checking;
+        statusMessage.style.display = 'block';
+        
+        fetch(`/api/mobile-payment-status/${transactionId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
             }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            statusCheckInterval = setInterval(() => {
-                if (checkCount < maxChecks) {
-                    checkStatus();
-                    checkCount++;
-                } else {
-                    clearInterval(statusCheckInterval);
-                    const statusMessage = document.getElementById('status-message');
-                    statusMessage.className = 'alert alert-warning';
-                    statusMessage.innerHTML = '<i class="fa fa-exclamation-triangle"></i> ' + translations.timeout;
-                    statusMessage.style.display = 'block';
-                }
-            }, 6000);
-            
-            setTimeout(() => {
-                checkStatus();
-            }, 3000);
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Status check response:', data);
+            updateStatusDisplay(data);
+        })
+        .catch(error => {
+            console.error('Status check error:', error);
+            statusMessage.className = 'alert alert-warning';
+            statusMessage.innerHTML = '<i class="fa fa-exclamation-triangle"></i> ' + translations.unableToCheck;
         });
+    }
 
-        window.addEventListener('beforeunload', function() {
+    function updateStatusDisplay(data) {
+        const statusMessage = document.getElementById('status-message');
+        const statusIndicator = document.querySelector('.status-indicator');
+        
+        console.log('Full API response:', data);
+        console.log('Status:', data.status);
+        console.log('Redirect URL:', data.redirect_url);
+        
+        if (data.status === 'completed') {
+            statusIndicator.className = 'status-indicator success';
+            statusIndicator.innerHTML = '<i class="fa fa-check-circle fa-3x"></i>';
+            
+            statusMessage.className = 'alert alert-success';
+            statusMessage.innerHTML = '<i class="fa fa-check"></i> ' + translations.success;
+            
             if (statusCheckInterval) {
                 clearInterval(statusCheckInterval);
             }
-        });
-    </script>
+            
+            setTimeout(() => {
+                if (data.redirect_url) {
+                    console.log('Redirecting to:', data.redirect_url);
+                    window.location.href = data.redirect_url;
+                } else {
+                    console.error('No redirect_url in response:', data);
+                    statusMessage.className = 'alert alert-warning';
+                    
+                    if (data.order_reference) {
+                        const fallbackUrl = `/order/${data.order_reference}/tickets`;
+                        console.log('Using fallback URL:', fallbackUrl);
+                        window.location.href = fallbackUrl;
+                    } else {
+                        statusMessage.innerHTML = translations.orderCompletedRedirectFailed + ' <a href="/order">' + translations.viewOrders + '</a>';
+                    }
+                }
+            }, 5000);
+            
+        } else if (data.status === 'failed') {
+            statusIndicator.className = 'status-indicator failed';
+            statusIndicator.innerHTML = '<i class="fa fa-times-circle fa-3x"></i>';
+            
+            statusMessage.className = 'alert alert-danger';
+            statusMessage.innerHTML = '<i class="fa fa-times"></i> ' + translations.failed;
+            
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // INCREASED: Check every 15 seconds instead of 6 (better for Render free tier)
+        // 40 checks × 15 seconds = 10 minutes total
+        statusCheckInterval = setInterval(() => {
+            if (checkCount < maxChecks) {
+                checkStatus();
+                checkCount++;
+                
+                // Show progress to user
+                const elapsed = Math.floor((checkCount * 15) / 60);
+                const remaining = Math.floor(((maxChecks - checkCount) * 15) / 60);
+                console.log(`Check ${checkCount}/${maxChecks} - ${elapsed}m elapsed, ~${remaining}m remaining`);
+                
+            } else {
+                clearInterval(statusCheckInterval);
+                const statusMessage = document.getElementById('status-message');
+                statusMessage.className = 'alert alert-warning';
+                statusMessage.innerHTML = '<i class="fa fa-exclamation-triangle"></i> ' + translations.timeout;
+                statusMessage.style.display = 'block';
+            }
+        }, 15000); // CHANGED: 15 seconds instead of 6 seconds
+        
+        // INCREASED: Initial check after 5 seconds instead of 3 (give server time to process)
+        setTimeout(() => {
+            checkStatus();
+        }, 5000);
+    });
+
+    window.addEventListener('beforeunload', function() {
+        if (statusCheckInterval) {
+            clearInterval(statusCheckInterval);
+        }
+    });
+</script>
 </body>
 </html>
