@@ -32,7 +32,7 @@ return array (
   'event_title' => 'Kichwa cha Event',
   'event_title_placeholder' => 'Mfano: Mkutano wa Kimataifa wa :name',
   'event_visibility' => 'Mwonekano wa Event',
-  'go_live' => 'Event Limewekwa Hadharani Kikamilifu! Unaweza kurudisha kitendo hiki kwenye ukurasa wa mipangilio ya Event.',
+  'go_live' => 'Event imewekwa online Kikamilifu! Unaweza kuiondoa kwenye ukurasa wa mipangilio ya Event.',
   'n_attendees_for_event' => 'Wahudhuriaji :num kwa Event: :name (:date)',
   'no_events_yet' => 'Hakuna Event Bado!',
   'no_events_yet_text' => 'Inaonekana bado hujatengeneza Event. Unaweza kutengeneza kwa kubonyeza kitufe hapo chini.',
