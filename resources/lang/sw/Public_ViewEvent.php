@@ -68,7 +68,7 @@ return [
     'payment_information'               => 'Taarifa za Malipo',
     'payment_instructions'              => 'Maelekezo ya Malipo',
     'payment_failed'                    => 'Malipo yameshindikana. Tafadhali jaribu tena.',
-    'presents'                          => 'inawasilisha',
+    'presents'                          => 'inakuletea',
     'price'                             => 'Bei',
     'quantity_full'                     => 'Idadi',
     'reference'                         => 'Rejea',
