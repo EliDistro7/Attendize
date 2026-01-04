@@ -14,7 +14,7 @@ return array (
   'check_in' => 'Thibitisha uwepo: :event',
   'email' => 'Barua Pepe',
   'email_address' => 'Anwani ya Barua Pepe',
-  'event_attendees' => 'Wahudhuria wa Tukio',
+  'event_attendees' => 'Wahudhuria wa Event',
   'first_name' => 'Jina la Kwanza',
   'last_name' => 'Jina la Mwisho',
   'name' => 'Jina',

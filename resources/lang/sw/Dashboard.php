@@ -5,12 +5,12 @@
 
 return array (
     //============================== New strings to translate ==============================//
-    'this_event_has_started' => 'Tukio hili limeanza.',
+    'this_event_has_started' => 'Event hili limeanza.',
     //==================================== Translations ====================================//
     'create_tickets' => 'Tengeneza tiketi',
-    'edit_event_page_design' => 'Hariri Muundo wa Ukurasa wa Tukio',
+    'edit_event_page_design' => 'Hariri Muundo wa Ukurasa wa Event',
     'edit_organiser_fees' => 'Hariri Ada za Mpangaji',
-    'event_page_visits' => 'Idadi ya Views ya Ukurasa wa Tukio',
+    'event_page_visits' => 'Idadi ya Views ya Ukurasa wa Event',
     'event_url' => 'URL ya Event',
     'event_views' => 'Views zza Event',
     'generate_affiliate_link' => 'Tengeneza link ushirikiano',
@@ -19,7 +19,7 @@ return array (
     'registrations_by_ticket' => 'Usajili kwa Tiketi',
     'sales_volume' => 'Kiwango cha Mauzo',
     'share_event' => 'Shiriki Event',
-    'this_event_is_on_now' => 'Tukio hili linaendelea sasa',
+    'this_event_is_on_now' => 'Event hili linaendelea sasa',
     'ticket_sales_volume' => 'Kiwango cha Mauzo ya Tiketi',
     'tickets_sold' => 'Tiketi Zilizouzwa',
     'website_embed_code' => 'Msimbo wa Kupachika Tovuti',

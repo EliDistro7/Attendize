@@ -8,7 +8,7 @@
 </p>
 
 <p>
-    Unaweza kuunda tukio lako la kwanza na kuthibitisha barua pepe yako kwa kutumia kiungo hapa chini.
+    Unaweza kuunda event yako ya kwanza na kuthibitisha barua pepe yako kwa kutumia kiungo hapa chini.
 </p>
 
 <div style="padding: 5px; border: 1px solid #ccc;">

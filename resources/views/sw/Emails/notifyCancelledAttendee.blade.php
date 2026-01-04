@@ -4,7 +4,7 @@
 
 <p>Hi there,</p>
 <p>
-    iketi yako kwa ajili ya tukio <b>{{{$attendee->event->title}}}</b> imeondolewa.
+    Tiketi yako kwa ajili ya event <b>{{{$attendee->event->title}}}</b> imeondolewa.
 </p>
 
 <p>

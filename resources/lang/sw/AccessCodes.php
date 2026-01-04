@@ -15,5 +15,5 @@ return [
     'no_tickets_matched' => 'Hakuna tiketi zinazofanana na code yako ya kufikia',
     'select_access_code' => 'Chagua Code za Kufikia',
     'access_codes_usage_count' => 'Idadi ya Matumizi',
-    'unique_error' => 'Code tayari imetumika kwa tukio hili',
+    'unique_error' => 'Code tayari imetumika kwa event hii',
 ];
