@@ -80,7 +80,7 @@ return [
     |
     */
 
-    'locale' => 'en',
+    'locale' => 'sw', // Changed from 'en' to 'sw' for Swahili
 
      /*
     |--------------------------------------------------------------------------
@@ -105,6 +105,27 @@ return [
     */
 
     'fallback_locale' => 'en',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Available Locales
+    |--------------------------------------------------------------------------
+    |
+    | List all the languages your application supports.
+    | The order here determines the order in the dropdown.
+    |
+    */
+
+    'available_locales' => [
+        'sw' => 'Kiswahili',     // Swahili first
+        'en' => 'English',
+        'de' => 'Deutsch',        // German
+        'es' => 'Español',        // Spanish
+        'fr' => 'Français',       // French
+       // 'ja' => '日本語',          // Japanese
+        //'nl' => 'Nederlands',     // Dutch
+       // 'ru' => 'Русский',        // Russian
+    ],
 
     /*
     |--------------------------------------------------------------------------

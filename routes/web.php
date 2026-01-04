@@ -39,6 +39,7 @@ use App\Http\Controllers\UserLoginController;
 use App\Http\Controllers\UserLogoutController;
 use App\Http\Controllers\UserSignupController;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization; 
+use App\Http\Controllers\LanguageController;
 
 
 Route::group(
@@ -120,6 +121,10 @@ Route::group(
        Route::post('/signup',
     [UserSignupController::class, 'postSignup']
 )->name('postSignup')->middleware('throttle:3,1');
+
+
+ // routes/web.php
+Route::post('/language/switch', [LanguageController::class, 'switch'])->name('language.switch');
 
         /*
          * Confirm Email

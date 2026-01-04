@@ -6,6 +6,27 @@
     {!! Form::open(['url' => route("login"), 'id' => 'login-form']) !!}
     <div class="row">
         <div class="col-md-4 col-md-offset-4">
+            <!-- Language Dropdown Switcher -->
+
+          {{-- Language Switcher using Laravel Localization Package --}}
+<div class="text-right" style="margin-bottom: 15px;">
+    <form action="{{ route('language.switch') }}" method="POST" id="language-form" style="display: inline-block;">
+        @csrf
+        <div class="form-group" style="margin-bottom: 0;">
+            <select name="language" class="form-control input-sm" onchange="window.location.href = this.options[this.selectedIndex].getAttribute('data-url')" style="width: auto; display: inline-block;">
+                @foreach(LaravelLocalization::getSupportedLocales() as $localeCode => $properties)
+                    <option 
+                        value="{{ $localeCode }}" 
+                        data-url="{{ LaravelLocalization::getLocalizedURL($localeCode, null, [], true) }}"
+                        {{ LaravelLocalization::getCurrentLocale() === $localeCode ? 'selected' : '' }}>
+                        {{ $properties['native'] }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+    </form>
+</div>
+
             <div class="panel">
                 <div class="panel-body">
                     <div class="logo">
