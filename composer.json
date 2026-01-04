@@ -17,8 +17,7 @@
         "doctrine/dbal": "^2.9|^3.0",
         "dompdf/dompdf": "^0.8|^1.0|^2.0",
         "graham-campbell/markdown": "^11.1|^12.0|^13.0|^14.0|^15.0",
-        "guzzlehttp/gu
-        zzle": "^6.4|^7.0",
+        "guzzlehttp/guzzle": "^6.4|^7.0",
         "guzzlehttp/psr7": "^1.6|^2.0",
         "intervention/image": "^2.5",
         "laracasts/utilities": "^3.0",
