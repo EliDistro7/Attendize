@@ -244,7 +244,8 @@
                         statusMessage.className = 'alert alert-warning';
                         
                         if (data.order_reference) {
-                            const fallbackUrl = `/order/${data.order_reference}`;
+                            //const fallbackUrl = `/order/${data.order_reference}`;
+                            const fallbackUrl = `/order/${data.order_reference}/tickets`;
                             console.log('Using fallback URL:', fallbackUrl);
                             window.location.href = fallbackUrl;
                         } else {

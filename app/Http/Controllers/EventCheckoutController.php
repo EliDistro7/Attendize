@@ -31,6 +31,8 @@ use Omnipay;
 use PDF;
 use PhpSpec\Exception\Exception;
 use Validator;
+use Spatie\Browsershot\Browsershot;
+use Spatie\Browsershot\Exceptions\CouldNotTakeBrowsershot;
 
 class EventCheckoutController extends Controller
 {
@@ -1073,6 +1075,8 @@ public function completeOrder($event_id, $return_json = true)
      * @param $order_reference
      * @return \Illuminate\View\View
      */
+
+    
     public function showOrderDetails(Request $request, $order_reference)
     {
         $order = Order::where('order_reference', '=', $order_reference)->first();
@@ -1099,46 +1103,62 @@ public function completeOrder($event_id, $return_json = true)
         return view('Public.ViewEvent.EventPageViewOrder', $data);
     }
 
-    /**
-     * Shows the tickets for an order - either HTML or PDF
-     *
-     * @param Request $request
-     * @param $order_reference
-     * @return \Illuminate\View\View
-     */
-    public function showOrderTickets(Request $request, $order_reference)
-    {
-        $order = Order::where('order_reference', '=', $order_reference)->first();
+/**
+ * Shows the tickets for an order - either HTML or PDF
+ *
+ * @param Request $request
+ * @param $order_reference
+ * @return \Illuminate\View\View
+ */
 
-        if (!$order) {
-            abort(404);
-        }
-        $images = [];
-        $imgs = $order->event->images;
-        foreach ($imgs as $img) {
-            $images[] = base64_encode(file_get_contents(public_path($img->image_path)));
-        }
-
-        $data = [
-            'order'     => $order,
-            'event'     => $order->event,
-            'tickets'   => $order->event->tickets,
-            'attendees' => $order->attendees,
-            'css'       => file_get_contents(public_path('assets/stylesheet/ticket.css')),
-            'image'     => base64_encode(file_get_contents(public_path($order->event->organiser->full_logo_path))),
-            'images'    => $images,
-        ];
-
-        if ($request->get('download') == '1') {
-            return PDF::html('Public.ViewEvent.Partials.PDFTicket', $data, 'Tickets');
-        }
-        return view('Public.ViewEvent.Partials.PDFTicket', $data);
+public function showOrderTickets(Request $request, $order_reference)
+{
+    $order = Order::where('order_reference', '=', $order_reference)->first();
+    
+    if (!$order) {
+        abort(404);
     }
 
+    $images = [];
+    $imgs = $order->event->images;
+    
+    foreach ($imgs as $img) {
+        $imagePath = public_path($img->image_path);
+        if (file_exists($imagePath)) {
+            $images[] = base64_encode(file_get_contents($imagePath));
+        } else {
+            Log::warning('Event image not found', [
+                'path' => $imagePath,
+                'image_id' => $img->id
+            ]);
+        }
+    }
 
+    $logoPath = public_path($order->event->organiser->full_logo_path);
+    $logo = null;
+    
+    if (file_exists($logoPath)) {
+        $logo = base64_encode(file_get_contents($logoPath));
+    } else {
+        Log::warning('Organiser logo not found', [
+            'path' => $logoPath,
+            'organiser_id' => $order->event->organiser->id
+        ]);
+    }
 
+    $data = [
+        'order' => $order,
+        'event' => $order->event,
+        'tickets' => $order->event->tickets,
+        'attendees' => $order->attendees,
+        'css' => file_get_contents(public_path('assets/stylesheet/ticket.css')),
+        'image' => $logo,
+        'images' => $images,
+    ];
 
-
+    // No more ?download=1 logic needed! Client-side handles it
+    return view('Public.ViewEvent.Partials.PDFTicket', $data);
+}
 private function getStatusMessage($status)
 {
     $messages = [

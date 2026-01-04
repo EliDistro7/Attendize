@@ -1,7 +1,7 @@
 {
     "name": "attendize/attendize",
     "version": "2.8.0",
-    "description": "A free and open-source event management and ticket selling application.",
+    "description": "An event management and ticket selling application.",
     "keywords": [
         "event management",
         "ticket selling",
@@ -10,7 +10,7 @@
     ],
     "license": "AAL",
     "type": "project",
-    "homepage": "https://www.attendize.com",
+    "homepage": "https://www.bari-tickets.onrender.com",
     "require": {
         "php": "^7.3|^8.0|^8.1|^8.2|^8.3",
         "ext-json": "*",

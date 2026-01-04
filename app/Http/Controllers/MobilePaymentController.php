@@ -346,33 +346,24 @@ class MobilePaymentController extends Controller
                 ]);
                 
                 switch ($order->order_status_id) {
-                    case 1: // Completed
-                        if ($order->is_payment_received) {
-                            $redirectUrl = route('showOrderDetails', [
-                                'order_reference' => $order->order_reference
-                            ]);
-                            
-                            Log::info('Payment completed successfully:', [
-                                'order_reference' => $order->order_reference,
-                                'redirect_url' => $redirectUrl
-                            ]);
-                            
-                            return response()->json([
-                                'status' => 'completed',
-                                'message' => 'Payment successful',
-                                'redirect_url' => $redirectUrl,
-                                'order_reference' => $order->order_reference
-                            ]);
-                        }
-                        
-                        Log::warning('Order exists but payment not received:', [
-                            'order_id' => $order->id
-                        ]);
-                        
-                        return response()->json([
-                            'status' => 'pending',
-                            'message' => 'Processing payment...'
-                        ]);
+                   case 1: // Completed
+    if ($order->is_payment_received) {
+        $redirectUrl = route('showOrderTickets', [
+            'order_reference' => $order->order_reference
+        ]);
+        
+        Log::info('Payment completed successfully:', [
+            'order_reference' => $order->order_reference,
+            'redirect_url' => $redirectUrl
+        ]);
+        
+        return response()->json([
+            'status' => 'completed',
+            'message' => 'Payment successful',
+            'redirect_url' => $redirectUrl,
+            'order_reference' => $order->order_reference
+        ]);
+    }
                         
                     case 4: // Cancelled
                         return response()->json([
