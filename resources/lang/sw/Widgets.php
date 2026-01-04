@@ -7,6 +7,6 @@ return array (
   //==================================== Translations ====================================//
   'event_widgets' => 'Wijeti za Event',
   'html_embed_code' => 'Msimbo wa Upachikaji wa HTML',
-  'instructions' => 'Maagizo',
+  'instructions' => 'Oda',
   'instructions_text' => 'Nakili tu na ubandike HTML iliyotolewa kwenye tovuti yako popote unapotaka wijeti ionekane.',
 );
