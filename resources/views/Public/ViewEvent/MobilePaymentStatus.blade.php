@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Mobile Payment Status - {{$event->title}}</title>
+    <title>@lang('MobilePayment.mobile_payment_status') - {{$event->title}}</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
@@ -97,7 +97,7 @@
                 <div class="payment-status-container">
                     <div class="panel panel-default">
                         <div class="panel-heading text-center">
-                            <h3><i class="fa fa-mobile"></i> Mobile Payment Status</h3>
+                            <h3><i class="fa fa-mobile"></i> @lang('MobilePayment.mobile_payment_status')</h3>
                         </div>
                         
                         <div class="panel-body text-center">
@@ -106,32 +106,30 @@
                                     <i class="fa fa-spinner fa-spin fa-3x"></i>
                                 </div>
                                 
-                                <h4>Processing Your Payment</h4>
-                                <p class="lead">Transaction ID: <strong>{{$transaction_id}}</strong></p>
+                                <h4>@lang('MobilePayment.processing_your_payment')</h4>
+                                <p class="lead">@lang('MobilePayment.transaction_id'): <strong>{{$transaction_id}}</strong></p>
                                 
                                 <div class="alert alert-info">
-                                    <h5><i class="fa fa-info-circle"></i> What happens next?</h5>
+                                    <h5><i class="fa fa-info-circle"></i> @lang('MobilePayment.what_happens_next')</h5>
                                     <ul class="text-left" style="display: inline-block;">
-                                        <li>Check your mobile phone for payment prompts</li>
-                                        <li>Follow the instructions on your mobile money service</li>
-                                        <li>Enter your mobile money PIN when prompted</li>
-                                        <li>You will receive an SMS confirmation</li>
+                                        <li>@lang('MobilePayment.check_phone_for_prompts')</li>
+                                        <li>@lang('MobilePayment.follow_instructions')</li>
+                                        <li>@lang('MobilePayment.enter_pin_when_prompted')</li>
+                                        <li>@lang('MobilePayment.receive_sms_confirmation')</li>
                                     </ul>
                                 </div>
                                 
                                 <div class="payment-details">
-                                    <p><strong>Event:</strong> {{$event->title}}</p>
-                                    <p><strong>Amount:</strong> {{ $orderService ? $orderService->getGrandTotal(true) : 'TZS 0' }}</p>
+                                    <p><strong>@lang('MobilePayment.event'):</strong> {{$event->title}}</p>
+                                    <p><strong>@lang('MobilePayment.amount'):</strong> {{ $orderService ? $orderService->getGrandTotal(true) : 'TZS 0' }}</p>
                                 </div>
                                 
                                 <div class="status-actions">
                                     <button class="btn btn-primary" onclick="checkStatus()">
-                                        <i class="fa fa-refresh"></i> Check Status
+                                        <i class="fa fa-refresh"></i> @lang('MobilePayment.check_status')
                                     </button>
                                     <a href="{{route('showEventPage', ['event_id' => $event->id])}}" class="btn btn-default">
-          
-                                    \
-                                        <i class="fa fa-arrow-left"></i> Back to Event
+                                        <i class="fa fa-arrow-left"></i> @lang('MobilePayment.back_to_event')
                                     </a>
                                 </div>
                                 
@@ -143,20 +141,20 @@
                     </div>
                     
                     <div class="help-section">
-                        <h5><i class="fa fa-question-circle"></i> Having trouble?</h5>
+                        <h5><i class="fa fa-question-circle"></i> @lang('MobilePayment.having_trouble')</h5>
                         <div class="row">
                             <div class="col-sm-6">
-                                <h6><i class="fa fa-exclamation-triangle"></i> Payment not working?</h6>
+                                <h6><i class="fa fa-exclamation-triangle"></i> @lang('MobilePayment.payment_not_working')</h6>
                                 <ul class="small">
-                                    <li>Check your mobile money account balance</li>
-                                    <li>Ensure you have network connectivity</li>
-                                    <li>Try again in a few minutes</li>
+                                    <li>@lang('MobilePayment.check_balance')</li>
+                                    <li>@lang('MobilePayment.ensure_connectivity')</li>
+                                    <li>@lang('MobilePayment.try_again_later')</li>
                                 </ul>
                             </div>
                             <div class="col-sm-6">
-                                <h6><i class="fa fa-phone"></i> Need help?</h6>
+                                <h6><i class="fa fa-phone"></i> @lang('MobilePayment.need_help')</h6>
                                 <p class="small">
-                                    Contact event organizer or customer support if payment issues persist.
+                                    @lang('MobilePayment.contact_support')
                                 </p>
                             </div>
                         </div>
@@ -169,7 +167,18 @@
     <script>
         let statusCheckInterval;
         let checkCount = 0;
-        const maxChecks = 20; // Check for about 2 minutes (6 seconds * 20)
+        const maxChecks = 20;
+
+        // Translation strings for JavaScript
+        const translations = {
+            checking: "@lang('MobilePayment.checking_payment_status')",
+            success: "@lang('MobilePayment.payment_successful_redirecting')",
+            failed: "@lang('MobilePayment.payment_failed_message')",
+            unableToCheck: "@lang('MobilePayment.unable_to_check_status')",
+            timeout: "@lang('MobilePayment.status_check_timeout')",
+            orderCompletedRedirectFailed: "@lang('MobilePayment.order_completed_redirect_failed')",
+            viewOrders: "@lang('MobilePayment.view_your_orders')"
+        };
 
         function checkStatus() {
             console.log('started checking status');
@@ -177,9 +186,8 @@
             const transactionId = '{{$transaction_id}}';
             const eventId = '{{$event->id}}';
             
-            // Show checking message
             statusMessage.className = 'alert alert-info';
-            statusMessage.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Checking payment status...';
+            statusMessage.innerHTML = '<i class="fa fa-spinner fa-spin"></i> ' + translations.checking;
             statusMessage.style.display = 'block';
             
             fetch(`/api/mobile-payment-status/${transactionId}`, {
@@ -204,55 +212,60 @@
             .catch(error => {
                 console.error('Status check error:', error);
                 statusMessage.className = 'alert alert-warning';
-                statusMessage.innerHTML = '<i class="fa fa-exclamation-triangle"></i> Unable to check status. Please try again or refresh the page.';
+                statusMessage.innerHTML = '<i class="fa fa-exclamation-triangle"></i> ' + translations.unableToCheck;
             });
         }
-function updateStatusDisplay(data) {
-    const statusMessage = document.getElementById('status-message');
-    const statusIndicator = document.querySelector('.status-indicator');
-    
-    console.log('Full API response:', data);
-    console.log('Status:', data.status);
-    console.log('Redirect URL:', data.redirect_url);
-    
-    if (data.status === 'completed') {
-        statusIndicator.className = 'status-indicator success';
-        statusIndicator.innerHTML = '<i class="fa fa-check-circle fa-3x"></i>';
-        
-        statusMessage.className = 'alert alert-success';
-        statusMessage.innerHTML = '<i class="fa fa-check"></i> Payment successful! Redirecting to order confirmation...';
-        
-        // Clear the interval
-        if (statusCheckInterval) {
-            clearInterval(statusCheckInterval);
-        }
-        
-        setTimeout(() => {
-            // Check if redirect_url exists
-            if (data.redirect_url) {
-                console.log('Redirecting to:', data.redirect_url);
-                window.location.href = data.redirect_url;
-            } else {
-                console.error('No redirect_url in response:', data);
-                statusMessage.className = 'alert alert-warning';
+
+        function updateStatusDisplay(data) {
+            const statusMessage = document.getElementById('status-message');
+            const statusIndicator = document.querySelector('.status-indicator');
+            
+            console.log('Full API response:', data);
+            console.log('Status:', data.status);
+            console.log('Redirect URL:', data.redirect_url);
+            
+            if (data.status === 'completed') {
+                statusIndicator.className = 'status-indicator success';
+                statusIndicator.innerHTML = '<i class="fa fa-check-circle fa-3x"></i>';
                 
-                // Try to build fallback URL using order_reference if available
-                if (data.order_reference) {
-                    const fallbackUrl = `/order/${data.order_reference}`;
-                    console.log('Using fallback URL:', fallbackUrl);
-                    window.location.href = fallbackUrl;
-                } else {
-                    statusMessage.innerHTML = 'Order completed, but redirect failed. <a href="/order">View your orders</a>';
+                statusMessage.className = 'alert alert-success';
+                statusMessage.innerHTML = '<i class="fa fa-check"></i> ' + translations.success;
+                
+                if (statusCheckInterval) {
+                    clearInterval(statusCheckInterval);
+                }
+                
+                setTimeout(() => {
+                    if (data.redirect_url) {
+                        console.log('Redirecting to:', data.redirect_url);
+                        window.location.href = data.redirect_url;
+                    } else {
+                        console.error('No redirect_url in response:', data);
+                        statusMessage.className = 'alert alert-warning';
+                        
+                        if (data.order_reference) {
+                            const fallbackUrl = `/order/${data.order_reference}`;
+                            console.log('Using fallback URL:', fallbackUrl);
+                            window.location.href = fallbackUrl;
+                        } else {
+                            statusMessage.innerHTML = translations.orderCompletedRedirectFailed + ' <a href="/order">' + translations.viewOrders + '</a>';
+                        }
+                    }
+                }, 5000);
+                
+            } else if (data.status === 'failed') {
+                statusIndicator.className = 'status-indicator failed';
+                statusIndicator.innerHTML = '<i class="fa fa-times-circle fa-3x"></i>';
+                
+                statusMessage.className = 'alert alert-danger';
+                statusMessage.innerHTML = '<i class="fa fa-times"></i> ' + translations.failed;
+                
+                if (statusCheckInterval) {
+                    clearInterval(statusCheckInterval);
                 }
             }
-        }, 5000);
-        
-    } else if (data.status === 'failed') {
-        // ... rest of your code
-    }
-}
+        }
 
-        // Auto-check status every 6 seconds
         document.addEventListener('DOMContentLoaded', function() {
             statusCheckInterval = setInterval(() => {
                 if (checkCount < maxChecks) {
@@ -262,18 +275,16 @@ function updateStatusDisplay(data) {
                     clearInterval(statusCheckInterval);
                     const statusMessage = document.getElementById('status-message');
                     statusMessage.className = 'alert alert-warning';
-                    statusMessage.innerHTML = '<i class="fa fa-exclamation-triangle"></i> Status check timeout. Please refresh the page or contact support.';
+                    statusMessage.innerHTML = '<i class="fa fa-exclamation-triangle"></i> ' + translations.timeout;
                     statusMessage.style.display = 'block';
                 }
             }, 6000);
             
-            // Initial status check after 3 seconds
             setTimeout(() => {
                 checkStatus();
             }, 3000);
         });
 
-        // Clean up interval when page unloads
         window.addEventListener('beforeunload', function() {
             if (statusCheckInterval) {
                 clearInterval(statusCheckInterval);

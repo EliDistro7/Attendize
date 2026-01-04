@@ -2,8 +2,8 @@
 
 return [
     'amount'                            => 'Kiasi',
-    'at'                                => 'kwenye',
-    'attendee_cancelled'                => 'Imeghairiwa',
+    'at'                                => 'Mahali',
+    'attendee_cancelled'                => 'Imeghairishwa',
     'below_order_details_header'        => 'Tafadhali kagua maelezo ya oda yako hapa chini',
     'below_payment_information_header'  => '',
     'below_tickets'                     => 'Chagua idadi ya tiketi na ubofye "sajili". Kwenye skrini inayofuata utazilipia.',
