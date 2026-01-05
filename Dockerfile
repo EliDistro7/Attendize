@@ -32,33 +32,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set up code
 WORKDIR /usr/share/nginx/html
-
-# IMPORTANT: Copy composer files first for better layer caching
-COPY composer.json composer.lock ./
-
-# Set unlimited memory for Composer and install dependencies
-ENV COMPOSER_MEMORY_LIMIT=-1
-ENV COMPOSER_ALLOW_SUPERUSER=1
-
-# Install composer dependencies with optimized flags
-RUN composer install \
-    --no-dev \
-    --optimize-autoloader \
-    --no-interaction \
-    --ignore-platform-reqs \
-    --prefer-dist \
-    --no-scripts \
-    && composer clear-cache
-
-# Now copy the rest of the application
 COPY . .
-
-# Run any post-install scripts manually if needed
-RUN composer dump-autoload --optimize --no-dev
 
 # Copy Aiven CA certificate (create this file first - see instructions)
 COPY ca-certificate.crt /etc/ssl/certs/aiven-ca.crt
 RUN chmod 644 /etc/ssl/certs/aiven-ca.crt
+
+# Install composer dependencies first
+RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=php --no-scripts
 
 # FIXED: Set proper permissions for Laravel storage directories
 # Create necessary directories if they don't exist
