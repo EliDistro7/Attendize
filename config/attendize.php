@@ -70,7 +70,7 @@ return [
     'default_locale'                => 'sw',
     'default_payment_gateway'       => 1, #Stripe=1 Paypal=2
 
-    'cdn_url_user_assets'   => '',
+    'cdn_url_user_assets'   => 'storage',
     'cdn_url_static_assets' => '',
 
     'google_analytics_id'       => env('GOOGLE_ANALYTICS_ID'),
