@@ -1,16 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <!--
-                  _   _                 _ _
-             /\  | | | |               | (_)
-            /  \ | |_| |_ ___ _ __   __| |_ _______   ___ ___  _ __ ___
-           / /\ \| __| __/ _ \ '_ \ / _` | |_  / _ \ / __/ _ \| '_ ` _ \
-          / ____ \ |_| ||  __/ | | | (_| | |/ /  __/| (_| (_) | | | | | |
-         /_/    \_\__|\__\___|_| |_|\__,_|_/___\___(_)___\___/|_| |_| |_|
-
-        -->
-        <title>{{{$event->title}}} - Attendize.com</title>
+  
+        <title>{{{$event->title}}} - Bari-Tickets.pro</title>
 
 
         <meta charset="utf-8" />
@@ -23,9 +15,9 @@
         <meta property="og:title" content="{{{$event->title}}}" />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="{{$event->event_url}}?utm_source=fb" />
-        @if($event->images->count())
-        <meta property="og:image" content="{{URL::to($event->images->first()['image_path'])}}" />
-        @endif
+           @if($event->images->count())
+<meta property="og:image" content="{{ asset(config('attendize.cdn_url_user_assets').'/'.$event->images->first()->image_path) }}" />
+@endif
         <meta property="og:description" content="{{{Str::words(md_to_str($event->description), 20)}}}" />
         <meta property="og:site_name" content="Attendize.com" />
         <!--[if lt IE 9]>
