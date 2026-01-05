@@ -286,12 +286,12 @@
                 statusMessage.innerHTML = '<i class="fa fa-exclamation-triangle"></i> ' + translations.timeout;
                 statusMessage.style.display = 'block';
             }
-        }, 15000); // CHANGED: 15 seconds instead of 6 seconds
+        }, 6000); // CHANGED: 15 seconds instead of 6 seconds
         
         // INCREASED: Initial check after 5 seconds instead of 3 (give server time to process)
         setTimeout(() => {
             checkStatus();
-        }, 5000);
+        }, 3000);
     });
 
     window.addEventListener('beforeunload', function() {
