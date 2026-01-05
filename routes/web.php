@@ -70,13 +70,27 @@ Route::group(
     )->name('postUpgrader');
 
     /*
-     * Logout
+     * -------------------------
+     * Public Routes - No Authentication Required
+     * -------------------------
+     */
+    
+    // Landing Page - accessible to everyone (guests and authenticated users)
+    Route::get('/', [IndexController::class, 'showLanding'])->name('landing');
+
+    /*
+     * Logout - accessible to everyone
      */
     Route::any('/logout',
         [UserLogoutController::class, 'doLogout']
     )->name('logout');
 
-    Route::group(['middleware' => ['installed']], function () {
+    /*
+     * -------------------------
+     * Guest Only Routes - Redirect authenticated users to dashboard
+     * -------------------------
+     */
+    Route::group(['middleware' => ['installed', 'guest']], function () {
 
         /*
          * Login
@@ -118,13 +132,9 @@ Route::group(
             [UserSignupController::class, 'showSignup']
         )->name('showSignup');
 
-       Route::post('/signup',
-    [UserSignupController::class, 'postSignup']
-)->name('postSignup')->middleware('throttle:3,1');
-
-
- // routes/web.php
-Route::post('/language/switch', [LanguageController::class, 'switch'])->name('language.switch');
+        Route::post('/signup',
+            [UserSignupController::class, 'postSignup']
+        )->name('postSignup')->middleware('throttle:3,1');
 
         /*
          * Confirm Email
@@ -135,7 +145,14 @@ Route::post('/language/switch', [LanguageController::class, 'switch'])->name('la
     });
 
     /*
-     * Public organiser page routes
+     * Language switcher - accessible to everyone
+     */
+    Route::post('/language/switch', [LanguageController::class, 'switch'])->name('language.switch');
+
+    /*
+     * -------------------------
+     * Public Organiser Page Routes
+     * -------------------------
      */
     Route::group(['prefix' => 'o'], function () {
 
@@ -145,36 +162,27 @@ Route::post('/language/switch', [LanguageController::class, 'switch'])->name('la
 
     });
 
+    /*
+     * -------------------------
+     * Mobile Payment Routes - Public
+     * -------------------------
+     */
+    Route::post('/e/{event_id}/checkout/create-mobile', 
+        [App\Http\Controllers\MobilePaymentController::class, 'initiate']
+    )->name('mobile.payment.initiate');
 
-    
+    Route::get('/e/{event_id}/payment/status/{transaction_id}', 
+        [App\Http\Controllers\MobilePaymentController::class, 'showStatus']
+    )->name('showMobilePaymentStatus');
 
-
-// Add these routes to your routes/web.php file
-
-/*
-|--------------------------------------------------------------------------
-| Mobile Payment Routes
-|--------------------------------------------------------------------------
-*/
-
-// Mobile payment initiation (called from checkout payment form)
-Route::post('/e/{event_id}/checkout/create-mobile', 
-    [App\Http\Controllers\MobilePaymentController::class, 'initiate']
-)->name('mobile.payment.initiate');
-
-// Mobile payment status page (shows the waiting/processing UI)
-Route::get('/e/{event_id}/payment/status/{transaction_id}', 
-    [App\Http\Controllers\MobilePaymentController::class, 'showStatus']
-)->name('showMobilePaymentStatus');
-
-// Mobile payment status check API (AJAX endpoint for polling)
-Route::get('/api/mobile-payment-status/{transaction_id}', 
-    [App\Http\Controllers\MobilePaymentController::class, 'checkStatus']
-)->name('mobile.payment.status.check');
-
+    Route::get('/api/mobile-payment-status/{transaction_id}', 
+        [App\Http\Controllers\MobilePaymentController::class, 'checkStatus']
+    )->name('mobile.payment.status.check');
 
     /*
-     * Public event page routes
+     * -------------------------
+     * Public Event Page Routes
+     * -------------------------
      */
     Route::group(['prefix' => 'e'], function () {
 
@@ -224,40 +232,37 @@ Route::get('/api/mobile-payment-status/{transaction_id}',
             [EventCheckoutController::class, 'showEventCheckout']
         )->name('showEventCheckout');
 
-      
-
         Route::post('{event_id}/checkout/create',
             [EventCheckoutController::class, 'postCreateOrderMobile']
         )->name('postCreateOrderMobile');
-
-    
     });
 
-       Route::get('order/{order_reference}',
+    /*
+     * Order details and tickets - public routes
+     */
+    Route::get('order/{order_reference}',
         [EventCheckoutController::class, 'showOrderDetails']
     )->name('showOrderDetails');
 
-    // Add this new route:
-Route::get('order/{order_reference}/tickets',
-    [EventCheckoutController::class, 'showOrderTickets']
-)->name('showOrderTickets');
+    Route::get('order/{order_reference}/tickets',
+        [EventCheckoutController::class, 'showOrderTickets']
+    )->name('showOrderTickets');
 
-      Route::get('{event_id}/checkout/success',
-            [EventCheckoutController::class, 'showEventCheckoutPaymentReturn']
-        )->name('showEventCheckoutPaymentReturn');
-
-     
-    
-    Route::get('/terms-and-conditions',
-    [App\Http\Controllers\TermsController::class, 'show']
-)->name('termsAndConditions');
-
-   
-
-  
+    Route::get('{event_id}/checkout/success',
+        [EventCheckoutController::class, 'showEventCheckoutPaymentReturn']
+    )->name('showEventCheckoutPaymentReturn');
 
     /*
-     * Backend routes
+     * Terms and Conditions - public route
+     */
+    Route::get('/terms-and-conditions',
+        [App\Http\Controllers\TermsController::class, 'show']
+    )->name('termsAndConditions');
+
+    /*
+     * -------------------------
+     * Backend Routes - Authentication Required
+     * -------------------------
      */
     Route::group(['middleware' => ['auth', 'first.run']], function () {
 
@@ -702,8 +707,4 @@ Route::get('order/{order_reference}/tickets',
             )->name('showEventPromote');
         });
     });
-
-    Route::get('/',
-        [IndexController::class, 'showIndex']
-    )->name('index');
 });

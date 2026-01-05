@@ -1,3 +1,6 @@
+// Main application javascript file
+// attendize/public/assets/javascript/app.js
+
 $(function () {
 
     /*

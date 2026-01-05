@@ -42,9 +42,9 @@ return array(
     'php_version_check' => 'Ukaguzi wa Toleo la PHP',
     'requirement_met' => 'Mafanikio: Kiendelezi cha <b>:requirement</b> kimepakiwa',
     'requirement_not_met' => 'Hitilafu: Kiendelezi cha <b>:requirement</b> hakijapakiwa',
-    'setup' => 'Usanidi wa Attendize',
-    'setup_completed' => 'Usanidi wa Attendize Tayari',
-    'setup_completed_already_message' => "Faili ya kusakinisha imegunduliwa ambayo inamaanisha mchakato wa usanidi wa bari-tickets tayari umekamilika. <br /> Ikiwa hujaweka mtumiaji wa chaguo-msingi unaweza " .
+    'setup' => 'Ku-install Bari-Tickets',
+    'setup_completed' => 'Ku-install Bari-Tickets Tayari',
+    'setup_completed_already_message' => "Faili ya ku-install imegunduliwa ambayo inamaanisha mchakato wa Ku-install bari-tickets tayari umekamilika. <br /> Ikiwa hujaweka mtumiaji wa chaguo-msingi unaweza " .
                                          "<a href='/signup'>Jisajili Mtumiaji wa Chaguo-msingi</a><br />Ikiwa tayari umeunda mtumiaji wa chaguo-msingi unaweza <a href='/login'>Ingia Hapa</a>",
     'test_database_connection' => 'Jaribu Muunganisho wa Hifadhidata',
     'title' => 'Kisakinishaji cha Wavuti cha bari-tickets',

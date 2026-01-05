@@ -21,6 +21,9 @@ class RedirectIfAuthenticated
             return redirect(route('showSelectOrganiser'));
         }
 
+        
+
         return $next($request);
     }
+    
 }
