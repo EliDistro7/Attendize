@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ee8717e087e95e3b4583863fb512a40a",
+    "content-hash": "4eb4baf33e8f7ad0e7b62c0180f58b8e",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -4057,59 +4057,6 @@
                 "source": "https://github.com/nikic/PHP-Parser/tree/v5.7.0"
             },
             "time": "2025-12-06T11:56:16+00:00"
-        },
-        {
-            "name": "nitmedia/wkhtml2pdf",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/NitMedia/wkhtml2pdf.git",
-                "reference": "586df81dcbeb75b092dc35f9e8b3ef940d66e05a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/NitMedia/wkhtml2pdf/zipball/586df81dcbeb75b092dc35f9e8b3ef940d66e05a",
-                "reference": "586df81dcbeb75b092dc35f9e8b3ef940d66e05a",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0"
-            },
-            "default-branch": true,
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-0": {
-                    "Nitmedia\\Wkhtml2pdf": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nithin Meppurathu",
-                    "email": "admin@nitmedia.com"
-                }
-            ],
-            "description": "Html 2 Pdf - using wkhtml2pdf, work on 32bit and 64 bit linux + MacOS",
-            "keywords": [
-                "illuminate",
-                "laravel",
-                "pdf",
-                "wkhtml2pdf",
-                "wkhtmltopdf"
-            ],
-            "support": {
-                "issues": "https://github.com/NitMedia/wkhtml2pdf/issues",
-                "source": "https://github.com/NitMedia/wkhtml2pdf/tree/2.1.0"
-            },
-            "time": "2017-03-06T14:34:44+00:00"
         },
         {
             "name": "omnipay/common",
@@ -12065,9 +12012,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "nitmedia/wkhtml2pdf": 20
-    },
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

@@ -1,5 +1,5 @@
 {
-    "name": "bari-tickets",
+    "name": "bari/tickets",
     "version": "1.0.0",
     "description": "An event management and ticket selling application.",
     "keywords": [
@@ -31,7 +31,7 @@
         "mcamara/laravel-localization": "*",
         "mews/purifier": "^3.1|^4.0",
         "milon/barcode": "^6.0|^8.0|^9.0|^10.0",
-        "nitmedia/wkhtml2pdf": "dev-master",
+    
         "omnipay/common": "^3.0",
         "omnipay/dummy": "^3.0",
         "omnipay/paypal": "^3.0",
