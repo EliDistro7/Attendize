@@ -25,18 +25,19 @@
             gap: 8px;
         }
         
-        /* Mobile: 2 columns with fixed uniform heights */
+        /* Mobile: 1 column - full width for posters */
         @media (max-width: 640px) {
             .masonry-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
+                grid-template-columns: 1fr;
+                gap: 12px;
             }
             
             .masonry-item-small,
             .masonry-item-medium,
             .masonry-item-large,
             .masonry-item-xlarge {
-                height: 280px;
+                height: auto;
+                aspect-ratio: 9 / 16;
             }
         }
         
@@ -65,35 +66,32 @@
             }
         }
         
-  /* Desktop: 3 columns true masonry with natural image heights */
-@media (min-width: 1024px) {
-    .masonry-grid {
-        grid-template-columns: repeat(3, 1fr);
-        grid-auto-rows: 4px;
-        gap: 16px;
-    }
-    
-    /* Make cards fit their content height */
-    .masonry-item-small,
-    .masonry-item-medium,
-    .masonry-item-large,
-    .masonry-item-xlarge {
-        height: fit-content; /* Let the card wrap its content */
-    }
-    
-    .masonry-item-small img,
-    .masonry-item-medium img,
-    .masonry-item-large img,
-    .masonry-item-xlarge img {
-        height: auto;
-        width: 100%;
-        display: block; /* Remove extra spacing */
-        object-fit: cover;
-    }
-    
-    /* Remove fixed grid-row spans - let content determine height */
-    /* The masonry effect will come from varied image aspect ratios naturally */
-}
+        /* Desktop: 3 columns true masonry with natural image heights */
+        @media (min-width: 1024px) {
+            .masonry-grid {
+                grid-template-columns: repeat(3, 1fr);
+                grid-auto-rows: 4px;
+                gap: 16px;
+            }
+            
+            /* Make cards fit their content height */
+            .masonry-item-small,
+            .masonry-item-medium,
+            .masonry-item-large,
+            .masonry-item-xlarge {
+                height: fit-content;
+            }
+            
+            .masonry-item-small img,
+            .masonry-item-medium img,
+            .masonry-item-large img,
+            .masonry-item-xlarge img {
+                height: auto;
+                width: 100%;
+                display: block;
+                object-fit: cover;
+            }
+        }
         
         /* Modal styles */
         .modal {
@@ -201,10 +199,8 @@
         /* Main content background */
         main {
             background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 50%, #f0f3f7 100%);
-            
         }
     </style>
-
 
 
 </head>
