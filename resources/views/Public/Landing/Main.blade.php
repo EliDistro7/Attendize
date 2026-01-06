@@ -385,21 +385,31 @@
         </div>
     </div>
 
-    <!-- How It Works Modal -->
-    <div id="howItWorksModal" class="modal">
-        <div class="modal-content p-8">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl lg:text-3xl font-bold text-[#2d4563]">Jinsi Inavyofanya Kazi</h2>
-                <button id="closeHowItWorksModal" class="p-2 text-gray-600 hover:text-[#d4af37]">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
+ <!-- How It Works Modal -->
+<div id="howItWorksModal" class="modal">
+    <div class="modal-content p-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl lg:text-3xl font-bold text-[#2d4563]">Jinsi Inavyofanya Kazi</h2>
+            <button id="closeHowItWorksModal" class="p-2 text-gray-600 hover:text-[#d4af37]">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
 
-            <p class="text-gray-600 mb-8 text-center">
-                Nunua tiketi kwa hatua tatu tu - haraka, salama, na rahisi
-            </p>
+        <p class="text-gray-600 mb-8 text-center">
+            Ununuzi wa tiketi kwa hatua rahisi au uanze biashara yako ya matukio
+        </p>
+
+       
+
+     
+
+        <!-- Event Manager Section -->
+        <div>
+            <h3 class="text-lg font-semibold text-[#2d4563] mb-6 text-center bg-[#2d4563]/10 py-2 rounded-lg">
+                Kwa Wasimamizi wa Matukio - Pata Mapato
+            </h3>
 
             <div class="space-y-8">
                 <!-- Step 1 -->
@@ -407,6 +417,92 @@
                     <div class="flex-shrink-0">
                         <div class="w-16 h-16 bg-gradient-to-br from-[#2d4563] to-[#1a2942] rounded-full flex items-center justify-center">
                             <span class="text-2xl font-bold text-[#d4af37]">01</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-[#2d4563] mb-2">Jisajili</h3>
+                        <p class="text-gray-600">
+                            Fungua akaunti yako ya msimamizi wa matukio. Jaza maelezo yako na thibitisha akaunti ili uanze kusimamia matukio.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-16 h-16 bg-gradient-to-br from-[#2d4563] to-[#1a2942] rounded-full flex items-center justify-center">
+                            <span class="text-2xl font-bold text-[#d4af37]">02</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-[#2d4563] mb-2">Unda Tukio</h3>
+                        <p class="text-gray-600">
+                            Unda tukio lako kwa kuweka jina, tarehe, mahali, maelezo na picha za kuvutia. Fanya tukio lako liwe la kipekee.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-16 h-16 bg-gradient-to-br from-[#2d4563] to-[#1a2942] rounded-full flex items-center justify-center">
+                            <span class="text-2xl font-bold text-[#d4af37]">03</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-[#2d4563] mb-2">Tengeneza Tiketi</h3>
+                        <p class="text-gray-600">
+                            Unda aina mbalimbali za tiketi (VIP, kawaida, wanafunzi), weka bei na idadi ya tiketi zinazopatikana.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-16 h-16 bg-gradient-to-br from-[#2d4563] to-[#1a2942] rounded-full flex items-center justify-center">
+                            <span class="text-2xl font-bold text-[#d4af37]">04</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-[#2d4563] mb-2">Uza na Pata Mapato</h3>
+                        <p class="text-gray-600">
+                            Sambaza tukio lako na uanze kuuza tiketi. Pata mapato yako moja kwa moja kutoka kwa kila tiketi inayouzwa!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Button -->
+            <div class="text-center mt-8">
+                <a href="{{ route('login') }}" class="inline-block bg-[#d4af37] hover:bg-[#c49d2f] text-white font-bold py-3 px-8 rounded-full transition duration-300 shadow-lg hover:shadow-xl">
+                    Anza Kupata Mapato Leo
+                </a>
+            </div>
+        </div>
+
+           <!-- Divider -->
+        <div class="relative my-10">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t-2 border-gray-200"></div>
+            </div>
+            <div class="relative flex justify-center">
+                <span class="bg-white px-4 text-base font-semibold text-gray-500">AU</span>
+            </div>
+        </div>
+       
+         <!-- Buyer Section -->
+        <div class="mb-8">
+            <h3 class="text-lg font-semibold text-[#2d4563] mb-6 text-center bg-[#d4af37]/10 py-2 rounded-lg">
+                Kwa Wanunuzi wa Tiketi
+            </h3>
+
+            <div class="space-y-8">
+                <!-- Step 1 -->
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-16 h-16 bg-gradient-to-br from-[#d4af37] to-[#c49d2f] rounded-full flex items-center justify-center">
+                            <span class="text-2xl font-bold text-white">01</span>
                         </div>
                     </div>
                     <div>
@@ -420,14 +516,14 @@
                 <!-- Step 2 -->
                 <div class="flex gap-6">
                     <div class="flex-shrink-0">
-                        <div class="w-16 h-16 bg-gradient-to-br from-[#2d4563] to-[#1a2942] rounded-full flex items-center justify-center">
-                            <span class="text-2xl font-bold text-[#d4af37]">02</span>
+                        <div class="w-16 h-16 bg-gradient-to-br from-[#d4af37] to-[#c49d2f] rounded-full flex items-center justify-center">
+                            <span class="text-2xl font-bold text-white">02</span>
                         </div>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-[#2d4563] mb-2">Lipa Salama</h3>
+                        <h3 class="text-xl font-bold text-[#2d4563] mb-2">Nunua na Lipa Salama</h3>
                         <p class="text-gray-600">
-                            Lipa kwa njia salama kwa kutumia M-Pesa, kadi za mkopo, au njia nyingine za malipo. Tiketi yako itakufikia kwa dakika chache.
+                            Chagua tiketi unayohitaji na lipa kwa njia salama kwa kutumia M-Pesa, kadi za mkopo, au njia nyingine za malipo. Tiketi yako itakufikia mara moja.
                         </p>
                     </div>
                 </div>
@@ -435,20 +531,22 @@
                 <!-- Step 3 -->
                 <div class="flex gap-6">
                     <div class="flex-shrink-0">
-                        <div class="w-16 h-16 bg-gradient-to-br from-[#2d4563] to-[#1a2942] rounded-full flex items-center justify-center">
-                            <span class="text-2xl font-bold text-[#d4af37]">03</span>
+                        <div class="w-16 h-16 bg-gradient-to-br from-[#d4af37] to-[#c49d2f] rounded-full flex items-center justify-center">
+                            <span class="text-2xl font-bold text-white">03</span>
                         </div>
                     </div>
                     <div>
                         <h3 class="text-xl font-bold text-[#2d4563] mb-2">Ingia kwa Tiketi</h3>
                         <p class="text-gray-600">
-                            Onyesha QR code yako kwenye mlango wa matukio. Tiketi yako ya dijitali itakuwezesha kuingia haraka na salama.
+                            Onyesha QR code yako kwenye mlango wa tukio. Tiketi yako ya dijitali itakuwezesha kuingia haraka na salama bila wasiwasi.
                         </p>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
+</div>
 
       <div id="searchModal" class="modal">
         <div class="modal-content p-8">
