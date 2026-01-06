@@ -295,7 +295,7 @@
                 
                 <!-- Event Card -->
                 <a href="{{ route('showEventPage', ['event_id' => $event->id, 'event_slug' => Str::slug($event->title)]) }}" 
-                   class="event-card {{ $sizeClass }} relative md:rounded-3xl overflow-hidden cursor-pointer">
+                   class="event-card {{ $sizeClass }} rounded:xl relative md:rounded-3xl overflow-hidden cursor-pointer">
  
                     
                     @if($event->images->count() > 0)
