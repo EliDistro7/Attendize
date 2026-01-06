@@ -291,6 +291,17 @@ private function formatDateForValidation($dateString)
     {
         $event = Event::scope()->findOrFail($event_id);
 
+            // DEBUG: Log file info
+    if ($request->hasFile('event_image')) {
+        \Log::info('File upload attempt:', [
+            'name' => $request->file('event_image')->getClientOriginalName(),
+            'mime' => $request->file('event_image')->getMimeType(),
+            'size' => $request->file('event_image')->getSize(),
+            'extension' => $request->file('event_image')->getClientOriginalExtension(),
+            'is_valid' => $request->file('event_image')->isValid(),
+        ]);
+    }
+
         if (!$event->validate($request->all())) {
             return response()->json([
                 'status'   => 'error',

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="sw">
 <head>
@@ -5,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BARI-TICKETS - Nunua Tiketi Kirahisi</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
+   <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
@@ -14,11 +15,80 @@
         }
         .event-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
         }
-        .hero-gradient {
-            background: linear-gradient(135deg, #f5f3f0 0%, #faf8f6 50%, #f0ebe5 100%);
+        
+      /* Masonry Layout */
+        .masonry-grid {
+            display: grid;
+            gap: 8px;
         }
+        
+        /* Mobile: 2 columns with fixed uniform heights */
+        @media (max-width: 640px) {
+            .masonry-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            
+            .masonry-item-small,
+            .masonry-item-medium,
+            .masonry-item-large,
+            .masonry-item-xlarge {
+                height: 280px;
+            }
+        }
+        
+        /* Tablet: 2 columns with reduced row gap */
+        @media (min-width: 641px) and (max-width: 1023px) {
+            .masonry-grid {
+                grid-template-columns: repeat(2, 1fr);
+                grid-auto-rows: 8px;
+                gap: 12px;
+            }
+            
+            .masonry-item-small {
+                grid-row: span 30;
+            }
+            
+            .masonry-item-medium {
+                grid-row: span 40;
+            }
+            
+            .masonry-item-large {
+                grid-row: span 50;
+            }
+            
+            .masonry-item-xlarge {
+                grid-row: span 60;
+            }
+        }
+        
+        /* Desktop: 3 columns true masonry with natural image heights */
+        @media (min-width: 1024px) {
+            .masonry-grid {
+                grid-template-columns: repeat(3, 1fr);
+                grid-auto-rows: 1px;
+                gap: 16px;
+            }
+            
+            .event-card {
+                display: flex;
+                flex-direction: column;
+            }
+            
+            /* Images scale naturally based on aspect ratio */
+            .masonry-item-small img,
+            .masonry-item-medium img,
+            .masonry-item-large img,
+            .masonry-item-xlarge img {
+                height: auto;
+                width: 100%;
+                object-fit: cover;
+                display: block;
+            }
+        }
+     
         .glass-card {
             background: rgba(212, 175, 55, 0.08);
             backdrop-filter: blur(10px);
@@ -107,152 +177,24 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section id="nyumbani" class="hero-gradient relative overflow-hidden">
-        <!-- Background Pattern -->
-        <div class="absolute inset-0 opacity-3">
-            <div class="absolute inset-0" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(212, 175, 55, .05) 35px, rgba(212, 175, 55, .05) 70px);"></div>
-        </div>
-
-        <div class="relative max-w-7xl mx-auto px-4 lg:px-8 py-12 lg:py-20">
-            <div class="grid lg:grid-cols-2 gap-12 items-center">
-                <!-- Left Content -->
-                <div class="text-gray-800 space-y-6 lg:space-y-8">
-                    <div class="inline-block px-4 py-2 bg-[#d4af37]/15 rounded-full border border-[#d4af37]/30">
-                        <span class="text-[#2d4563] text-sm font-semibold">🎉 Jukwaa la Kisasa la Tiketi</span>
-                    </div>
-                    
-                    <h1 class="text-4xl lg:text-6xl font-bold leading-tight text-[#2d4563]">
-                        Nunua Tiketi<br/>
-                        <span class="text-[#d4af37]">Kirahisi</span>
-                    </h1>
-                    
-                    <p class="text-lg lg:text-xl text-gray-600">
-                        Nunua tiketi, shiriki matukio, na furahia uzoefu wa kipekee. 
-                        Jukwaa la kisasa la usimamizi wa tiketi na matukio Tanzania.
-                    </p>
-                    
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="#matukio" class="inline-flex items-center justify-center px-8 py-4 bg-[#d4af37] text-[#2d4563] rounded-xl font-bold text-lg hover:bg-[#b8942d] transition-all gold-glow">
-                            Tazama Matukio
-                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                            </svg>
-                        </a>
-                        <a href="{{ route('login') }}" class="inline-flex items-center justify-center px-8 py-4 bg-[#2d4563] text-white rounded-xl font-bold text-lg hover:bg-[#1a2942] transition-all">
-                            Ingia 
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Right Content - Phone Mockup -->
-                <div class="relative hidden lg:block">
-                    <div class="relative z-10 floating">
-                        <!-- Main Phone -->
-                        <div class="relative mx-auto w-80 h-[600px] bg-[#2d4563] rounded-[3rem] shadow-2xl p-3 border-8 border-[#1a2942]">
-                            <div class="w-full h-full bg-white rounded-[2.5rem] overflow-hidden">
-                                <!-- Phone Screen Content -->
-                                <div class="h-full flex flex-col">
-                                    <!-- App Header -->
-                                    <div class="bg-[#2d4563] px-6 pb-4">
-                                        <img style="width: 100px;" class="logo" alt="BARI-TICKETS" src="{{asset('assets/images/logo-light.png')}}"/>
-                                    </div>
-
-                                    <!-- Ticket Card -->
-                                    <div class="flex-1 bg-gradient-to-b from-[#2d4563] to-gray-50 p-4">
-                                        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-                                            <div class="bg-[#d4af37] px-4 py-2 flex justify-between items-center">
-                                                <span class="text-[#2d4563] text-xs font-bold">TIKETI</span>
-                                                <span class="text-[#2d4563] text-xs font-bold">VILIVYO</span>
-                                            </div>
-                                            
-                                            <!-- QR Code -->
-                                            <div class="p-6 flex justify-center bg-white">
-                                                <div class="w-40 h-40 bg-[#2d4563] rounded-xl flex items-center justify-center">
-                                                    <div class="w-32 h-32 bg-white rounded-lg grid grid-cols-8 grid-rows-8 gap-0.5 p-1">
-                                                        <!-- QR Code Pattern -->
-                                                        <div class="bg-[#2d4563] rounded-sm col-span-3 row-span-3"></div>
-                                                        <div class="bg-white"></div>
-                                                        <div class="bg-[#2d4563] rounded-sm"></div>
-                                                        <div class="bg-white col-span-2"></div>
-                                                        <div class="bg-[#2d4563] rounded-sm"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Event Info -->
-                                            <div class="px-6 pb-6 space-y-3">
-                                                <h3 class="text-[#2d4563] text-lg font-bold text-center">
-                                                    SERENGETI MUSIC<br/>FESTIVAL 2024
-                                                </h3>
-                                                <div class="flex items-center justify-center gap-2 text-gray-600 text-sm">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                                    </svg>
-                                                    SAT, OCT 26 | 18:00
-                                                </div>
-                                                <div class="flex items-center justify-center gap-2 text-gray-600 text-sm">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                    </svg>
-                                                    UHURU GROUNDS
-                                                </div>
-                                                <button class="w-full bg-[#d4af37] text-[#2d4563] font-bold py-3 rounded-xl mt-4">
-                                                    TAZAMA MAELEZO
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Floating Cards -->
-                    <div class="absolute -top-10 -left-10 glass-card rounded-2xl p-4 shadow-xl" style="animation: float 4s ease-in-out infinite;">
-                        <div class="text-[#d4af37] font-bold text-sm">✓ Usalama</div>
-                        <div class="text-gray-700 text-xs">Malipo Salama</div>
-                    </div>
-                    
-                    <div class="absolute -bottom-10 -right-10 glass-card rounded-2xl p-4 shadow-xl" style="animation: float 3.5s ease-in-out infinite; animation-delay: 0.5s;">
-                        <div class="text-[#d4af37] font-bold text-sm">⚡ Haraka</div>
-                        <div class="text-gray-700 text-xs">Tiketi Mara Moja</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Wave Divider -->
-        <div class="absolute bottom-0 left-0 right-0">
-            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="white"/>
-            </svg>
-        </div>
-    </section>
+  
 
     <!-- Featured Events Section -->
-    <main id="matukio" class="py-16 lg:py-24 bg-white">
-        <div class="max-w-7xl mx-auto px-4 lg:px-8">
-            <!-- Section Header -->
-            <div class="flex items-center justify-between mb-8">
-                <div>
-                    <h2 class="text-3xl font-bold text-[#2d4563]">Matukio Yajayo</h2>
-                </div>
-                <a href="#matukio" class="hidden lg:inline-flex items-center gap-2 text-[#d4af37] font-semibold hover:gap-3 transition-all">
-                    Tazama Yote
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                    </svg>
-                </a>
-            </div>
-
+    <main id="matukio" class="py-4 lg:py-8 bg-white">
+        <div class="max-w-7xl mx-auto px-3 lg:px-6">
+        
             @if($events->count() > 0)
-            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+            <div class="masonry-grid">
                 @foreach($events as $event)
+                @php
+                    // Create a pattern for varied sizes
+                    $sizeClasses = ['masonry-item-small', 'masonry-item-medium', 'masonry-item-large', 'masonry-item-xlarge'];
+                    $sizeClass = $sizeClasses[$loop->index % 4];
+                @endphp
+                
                 <!-- Event Card -->
                 <a href="{{ route('showEventPage', ['event_id' => $event->id, 'event_slug' => Str::slug($event->title)]) }}" 
-                   class="event-card relative rounded-3xl overflow-hidden cursor-pointer h-72 lg:h-80 bg-white shadow-md border border-gray-100 {{ $loop->index >= 6 ? 'hidden lg:block' : '' }} {{ $loop->index >= 7 ? 'hidden xl:block' : '' }}">
+                   class="event-card {{ $sizeClass }} relative md:rounded-3xl overflow-hidden cursor-pointer bg-white shadow-md border border-gray-100">
                     
                     @if($event->images->count() > 0)
                         <img src="{{ asset(config('attendize.cdn_url_user_assets').'/'.$event->images->first()->image_path) }}" 
@@ -266,32 +208,9 @@
                         </div>
                     @endif
                     
-                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/40 to-transparent"></div>
+        
                     
-                    <!-- Event Badge -->
-                    <div class="absolute top-4 right-4">
-                        <span class="inline-block px-3 py-1 bg-[#d4af37] text-[#2d4563] text-xs font-bold rounded-full">
-                            TIKETI ZINAPATIKANA
-                        </span>
-                    </div>
-                    
-                    <div class="absolute bottom-0 left-0 right-0 p-5">
-                        <div class="text-xs font-semibold text-[#d4af37] mb-2">
-                            {{ $event->start_date->format('M d') }}
-                            @if($event->start_date->format('Y-m-d') !== $event->end_date->format('Y-m-d'))
-                                - {{ $event->end_date->format('M d') }}
-                            @endif
-                        </div>
-                        <h3 class="text-xl font-bold mb-1 leading-tight text-white">
-                            {{ Str::limit($event->title, 40) }}
-                        </h3>
-                        <p class="text-sm text-gray-200 flex items-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                            </svg>
-                            {{ $event->venue_name ?? $event->location_address_line_1 ?? 'Matukio ya Mtandaoni' }}
-                        </p>
-                    </div>
+              
                 </a>
                 @endforeach
             </div>
@@ -306,15 +225,7 @@
             </div>
             @endif
 
-            <!-- View All Button Mobile -->
-            <div class="mt-8 lg:hidden text-center">
-                <a href="#" class="inline-flex items-center gap-2 text-[#d4af37] font-semibold">
-                    Tazama Matukio Yote
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                    </svg>
-                </a>
-            </div>
+     
         </div>
     </main>
 
@@ -405,9 +316,9 @@
                             <div class="flex items-center gap-4 mb-4">
                                 <div class="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
                                     <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.555 0 11.89-5.335 11.893-11.892a11.82 11.82 0 00-3.03-8.413"/>
+                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.67-1.612-.916-2.206-.242-.579-.487-.5-.67-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.29.173-1.413-.074-.123-.272-.198-.57-.347z"/>
                                     </svg>
-                                    </div>
+                                     </div>
                                 <div>
                                     <h3 class="text-xl font-bold text-gray-800 mb-1">WhatsApp</h3>
                                     <p class="text-sm text-gray-600">Tupigie simu au tuma ujumbe</p>
