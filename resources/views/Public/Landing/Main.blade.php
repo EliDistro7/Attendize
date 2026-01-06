@@ -284,7 +284,7 @@
 
     <!-- Featured Events Section -->
     <main id="matukio" class="py-4  ">
-        <div class="max-w-7xl mx-auto px-3 ">
+        <div class="max-w-7xl mx-0 md:mx-auto px-0 md:px-3 ">
         
             @if($events->count() > 0)
             <div class="masonry-grid">

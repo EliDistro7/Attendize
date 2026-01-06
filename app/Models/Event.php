@@ -48,7 +48,7 @@ class Event extends MyBaseModel
             'start_date'          => 'required|date_format:"' . $format . '"',
             'end_date'            => 'required|date_format:"' . $format . '"',
             'organiser_name'      => 'required_without:organiser_id',
-            'event_image' => 'nullable|mimes:jpeg,jpgpng,gif,webp,bmp,svg,JPG,PNG,x-icon|max:3000',
+            'event_image' => 'nullable|mimes:jpeg,jpgpng,gif,webp,bmp,svg,JPG,PNG,x-icon|max:20000',
         ];
     }
 
