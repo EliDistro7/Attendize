@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BARI-TICKETS - Nunua Tiketi Kirahisi</title>
     <script src="https://cdn.tailwindcss.com"></script>
-   <style>
+  <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: transparent;
@@ -25,7 +25,7 @@
             gap: 8px;
         }
         
-        /* Mobile: 1 column - full width for posters */
+        /* Mobile: 1 column - original poster size */
         @media (max-width: 640px) {
             .masonry-grid {
                 grid-template-columns: 1fr;
@@ -37,7 +37,6 @@
             .masonry-item-large,
             .masonry-item-xlarge {
                 height: auto;
-                aspect-ratio: 9 / 16;
             }
         }
         
@@ -203,6 +202,8 @@
     </style>
 
 
+
+
 </head>
 <body class="text-gray-800 ">
     
@@ -287,20 +288,20 @@
         
             @if($events->count() > 0)
             <div class="masonry-grid">
-                @foreach($events as $event)
+                 @foreach($events as $event)
                 @php
-                    // Create a pattern for varied sizes
-                   // $sizeClasses = ['masonry-item-small', 'masonry-item-medium', 'masonry-item-large', 'masonry-item-xlarge'];
                     $sizeClass = 'masonry-item-small';
                 @endphp
                 
                 <!-- Event Card -->
                 <a href="{{ route('showEventPage', ['event_id' => $event->id, 'event_slug' => Str::slug($event->title)]) }}" 
-                   class="event-card {{ $sizeClass }} relative md:rounded-3xl overflow-hidden cursor-pointer ">
+                   class="event-card {{ $sizeClass }} relative md:rounded-3xl overflow-hidden cursor-pointer">
+ 
                     
                     @if($event->images->count() > 0)
                         <img src="{{ asset(config('attendize.cdn_url_user_assets').'/'.$event->images->first()->image_path) }}" 
-                             alt="{{ $event->title }}" class="w-full h-full object-cover">
+                             alt="{{ $event->title }}" class="w-full h-auto object-contain">
+                             
                     @else
                         <!-- Fallback gradient -->
                         <div class="w-full h-full bg-gradient-to-br from-[#2d4563] via-[#3d5573] to-[#d4af37] flex items-center justify-center">
