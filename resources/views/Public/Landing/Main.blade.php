@@ -8,7 +8,7 @@
    <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #2d4563 0%, #3d5573 50%, #d4af37 100%);
+            background: transparent;
             min-height: 100vh;
         }
         .event-card {
@@ -65,39 +65,35 @@
             }
         }
         
-        /* Desktop: 3 columns true masonry with natural image heights */
-        @media (min-width: 1024px) {
-            .masonry-grid {
-                grid-template-columns: repeat(3, 1fr);
-                grid-auto-rows: 4px;
-                gap: 16px;
-            }
-            
-            .masonry-item-small img,
-            .masonry-item-medium img,
-            .masonry-item-large img,
-            .masonry-item-xlarge img {
-                height: auto;
-                width: 100%;
-                object-fit: cover;
-            }
-            
-            .masonry-item-small {
-                grid-row: span 60;
-            }
-            
-            .masonry-item-medium {
-                grid-row: span 80;
-            }
-            
-            .masonry-item-large {
-                grid-row: span 100;
-            }
-            
-            .masonry-item-xlarge {
-                grid-row: span 120;
-            }
-        }
+  /* Desktop: 3 columns true masonry with natural image heights */
+@media (min-width: 1024px) {
+    .masonry-grid {
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: 4px;
+        gap: 16px;
+    }
+    
+    /* Make cards fit their content height */
+    .masonry-item-small,
+    .masonry-item-medium,
+    .masonry-item-large,
+    .masonry-item-xlarge {
+        height: fit-content; /* Let the card wrap its content */
+    }
+    
+    .masonry-item-small img,
+    .masonry-item-medium img,
+    .masonry-item-large img,
+    .masonry-item-xlarge img {
+        height: auto;
+        width: 100%;
+        display: block; /* Remove extra spacing */
+        object-fit: cover;
+    }
+    
+    /* Remove fixed grid-row spans - let content determine height */
+    /* The masonry effect will come from varied image aspect ratios naturally */
+}
         
         /* Modal styles */
         .modal {
@@ -120,7 +116,7 @@
         }
         
         .modal-content {
-            background: white;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 50%, #f0f3f7 100%);
             border-radius: 24px;
             max-width: 900px;
             width: 90%;
@@ -209,6 +205,8 @@
         }
     </style>
 
+
+
 </head>
 <body class="text-gray-800 ">
     
@@ -224,8 +222,7 @@
                 </button>
 
                 <!-- Center: Logo -->
-                <a href="#nyu
-                mbani" class="logo-container absolute left-1/2 transform -translate-x-1/2 lg:relative lg:left-0 lg:transform-none">
+                <a href="#nyumbani" class="logo-container absolute left-1/2 transform -translate-x-1/2 lg:relative lg:left-0 lg:transform-none">
                     <img class="logo" alt="BARI-TICKETS" src="{{asset('assets/images/logo-light.png')}}"/>
                 </a>
 
@@ -289,21 +286,21 @@
     </aside>
 
     <!-- Featured Events Section -->
-    <main id="matukio" class="py-4 lg:py-8 bg-white">
-        <div class="max-w-7xl mx-auto px-3 lg:px-6">
+    <main id="matukio" class="py-4  ">
+        <div class="max-w-7xl mx-auto px-3 ">
         
             @if($events->count() > 0)
             <div class="masonry-grid">
                 @foreach($events as $event)
                 @php
                     // Create a pattern for varied sizes
-                    $sizeClasses = ['masonry-item-small', 'masonry-item-medium', 'masonry-item-large', 'masonry-item-xlarge'];
-                    $sizeClass = $sizeClasses[$loop->index % 4];
+                   // $sizeClasses = ['masonry-item-small', 'masonry-item-medium', 'masonry-item-large', 'masonry-item-xlarge'];
+                    $sizeClass = 'masonry-item-small';
                 @endphp
                 
                 <!-- Event Card -->
                 <a href="{{ route('showEventPage', ['event_id' => $event->id, 'event_slug' => Str::slug($event->title)]) }}" 
-                   class="event-card {{ $sizeClass }} relative md:rounded-3xl overflow-hidden cursor-pointer bg-white shadow-md border border-gray-100">
+                   class="event-card {{ $sizeClass }} relative md:rounded-3xl overflow-hidden cursor-pointer ">
                     
                     @if($event->images->count() > 0)
                         <img src="{{ asset(config('attendize.cdn_url_user_assets').'/'.$event->images->first()->image_path) }}" 
@@ -450,6 +447,23 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+      <div id="searchModal" class="modal">
+        <div class="modal-content p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl lg:text-3xl font-bold text-[#2d4563]">Itakujia Hivi Karibuni</h2>
+                <button id="closeSearchModal" class="p-2 text-gray-600 hover:text-[#d4af37]">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+          
+
+           
         </div>
     </div>
 
@@ -601,12 +615,20 @@
             });
         });
         
-        // Search functionality (placeholder)
+       // Search Modal
         const searchBtn = document.getElementById('searchBtn');
+        const searchModal = document.getElementById('searchModal');
+        const closeSearchModal = document.getElementById('closeSearchModal');
+
         searchBtn.addEventListener('click', () => {
-            alert('Utafutaji wa matukio unakuja hivi karibuni!');
+            searchModal.classList.add('active');
         });
-        
+
+        closeSearchModal.addEventListener('click', () => {
+            searchModal.classList.remove('active');
+        });
+
+
         // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
