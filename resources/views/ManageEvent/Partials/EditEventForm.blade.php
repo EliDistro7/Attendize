@@ -213,3 +213,59 @@
     {!! Form::close() !!}
 </div>
 
+{!! Form::close() !!}  <!-- Close the edit form first -->
+</div>
+
+<div class="col-md-12">
+    <div class="panel-footer mt15">
+        <div class="row">
+            <div class="col-sm-6 text-left">
+                <!-- Delete Event Button -->
+                <button type="button" 
+                        class="btn btn-danger" 
+                        data-toggle="modal" 
+                        data-target="#deleteEventModal">
+                    <i class="ico-trash"></i> @lang("Event.delete_event")
+                </button>
+            </div>
+            <div class="col-sm-6 text-right">
+                {!! Form::hidden('organiser_id', $event->organiser_id) !!}
+                {!! Form::submit(trans("Event.save_changes"), ['class'=>"btn btn-success"]) !!}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Event Confirmation Modal -->
+<div class="modal fade" id="deleteEventModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">@lang("Event.confirm_delete")</h4>
+            </div>
+            <div class="modal-body">
+                <p>@lang("Event.delete_warning")</p>
+                <p><strong>@lang("Event.event_title"):</strong> {{ $event->title }}</p>
+                <div class="alert alert-danger">
+                    <strong>@lang("Event.warning")!</strong> @lang("Event.delete_permanent_warning")
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    @lang("Event.cancel")
+                </button>
+                <form action="{{ route('postDeleteEvent', ['event_id' => $event->id]) }}" 
+                      method="POST" 
+                      style="display: inline;">
+                    @csrf
+                    <button type="submit" class="btn btn-danger">
+                        @lang("Event.confirm_delete_button")
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

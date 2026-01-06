@@ -52,4 +52,11 @@ return array (
   'venue_name_placeholder' => 'E.g: The Crab Shack',
   'vis_hide' => 'Hide event from the public.',
   'vis_public' => 'Make event visible to the public.',
+   'delete_event' => 'Delete Event',
+    'confirm_delete' => 'Confirm Delete Event',
+    'delete_warning' => 'Are you sure you want to delete this event? This action cannot be undone.',
+    'delete_permanent_warning' => 'This will permanently delete the event, all tickets, orders, and related data.',
+    'cancel' => 'Cancel',
+    'confirm_delete_button' => 'Yes, Delete Event',
+    'warning' => 'Warning',
 );

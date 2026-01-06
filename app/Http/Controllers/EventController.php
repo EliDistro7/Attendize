@@ -280,6 +280,74 @@ private function formatDateForValidation($dateString)
     }
 }
 
+
+/**
+ * Delete an event
+ *
+ * @param $event_id
+ * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+ */
+public function deleteEvent($event_id)
+{
+    try {
+        $event = Event::scope()->findOrFail($event_id);
+        
+        // Store organiser_id before deleting
+        $organiser_id = $event->organiser_id;
+        
+        // Delete associated event images from storage
+        $eventImages = EventImage::where('event_id', $event_id)->get();
+        foreach ($eventImages as $image) {
+            // Delete from public storage
+            if (Storage::disk('public')->exists($image->image_path)) {
+                Storage::disk('public')->delete($image->image_path);
+            }
+            
+            // Delete from configured storage (S3, etc.) if different
+            if (config('filesystems.default') !== 'public') {
+                $filename = basename($image->image_path);
+                $path = config('attendize.event_images_path') . '/' . $filename;
+                if (Storage::exists($path)) {
+                    Storage::delete($path);
+                }
+            }
+            
+            // Delete the database record
+            $image->delete();
+        }
+        
+        // Delete the event (this should cascade delete related records like tickets, orders, etc.)
+        // Make sure your Event model has proper cascade delete relationships set up
+        $event->delete();
+        
+        \Session::flash('message', trans("Controllers.event_successfully_deleted"));
+        
+        return redirect()->route('showOrganiserDashboard', ['organiser_id' => $organiser_id]);
+        
+    } catch (\Exception $e) {
+        Log::error('Error deleting event: ' . $e->getMessage());
+        
+        \Session::flash('error', trans("Controllers.event_delete_error"));
+        
+        return redirect()->back();
+    }
+}
+
+/**
+ * Show delete confirmation modal (optional - for AJAX approach)
+ *
+ * @param $event_id
+ * @return \Illuminate\View\View
+ */
+public function showDeleteEventConfirm($event_id)
+{
+    $event = Event::scope()->findOrFail($event_id);
+    
+    return view('ManageEvent.Modals.DeleteEventConfirm', [
+        'event' => $event
+    ]);
+}
+
     /**
      * Edit an event
      *

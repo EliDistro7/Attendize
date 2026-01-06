@@ -144,6 +144,9 @@ Route::group(
         )->name('confirmEmail')->middleware('throttle:3,1');
     });
 
+
+
+
     /*
      * Language switcher - accessible to everyone
      */
@@ -383,6 +386,18 @@ Route::group(
             Route::get('{event_id}/',
                 [EventDashboardController::class, 'redirectToDashboard']
             );
+
+                // Delete event route
+   Route::post('event/{event_id}/delete', [
+    'as' => 'postDeleteEvent',
+    'uses' => 'EventController@deleteEvent'
+]);
+
+// Optional: Show delete confirmation modal (for AJAX)
+Route::get('event/{event_id}/delete-confirm', [
+    'as' => 'showDeleteEventConfirm', 
+    'uses' => 'EventController@showDeleteEventConfirm'
+]);
 
             Route::post('{event_id}/go_live',
                 [EventController::class, 'postMakeEventLive']

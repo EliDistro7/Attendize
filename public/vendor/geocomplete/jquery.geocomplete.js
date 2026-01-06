@@ -166,7 +166,7 @@
         options.componentRestrictions = {country: this.options.country};
       }
 
-      this.autocomplete = new google.maps.places.Autocomplete(
+      this.autocomplete = new google.maps.places.PlaceAutocompleteElement(
         this.input, options
       );
 
